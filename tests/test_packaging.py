@@ -16,7 +16,7 @@ else:
 
 @pytest.fixture(name="mod", params=(attr, attrs))
 def _mod(request):
-    return request.param
+    yield request.param
 
 
 class TestLegacyMetadataHack:
@@ -125,7 +125,7 @@ class TestLegacyMetadataHack:
 
     def test_version_info(self, recwarn, mod):
         """
-        ___version_info__ is not deprecated, therefore doesn't raise a warning
+        ___version_info__ is not deprected, therefore doesn't raise a warning
         and parses correctly.
         """
         assert isinstance(mod.__version_info__, attr.VersionInfo)
