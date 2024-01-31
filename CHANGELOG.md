@@ -1,14 +1,14 @@
 # Changelog
 
-Versions follow [Calendar Versioning](https://calver.org) with a strict backwards-compatibility policy.
+Versions follow [CalVer](https://calver.org) with a strict backwards-compatibility policy.
 
 The **first number** of the version is the year.
 The **second number** is incremented with each release, starting at 1 for each year.
 The **third number** is when we need to start branches for older releases (only for emergencies).
 
-You can find our backwards-compatibility policy [here](https://github.com/python-attrs/attrs/blob/main/.github/SECURITY.md).
+You can find out backwards-compatibility policy [here](https://github.com/python-attrs/attrs/blob/main/.github/SECURITY.md).
 
-Changes for the upcoming release can be found in the [`changelog.d` directory](https://github.com/python-attrs/attrs/tree/main/changelog.d) in our repository.
+Changes for the upcoming release can be found in the ["changelog.d" directory](https://github.com/python-attrs/attrs/tree/main/changelog.d) in our repository.
 
 <!--
 Do *NOT* add changelog entries here!
@@ -19,28 +19,6 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
 -->
 
 <!-- towncrier release notes start -->
-
-## [23.2.0](https://github.com/python-attrs/attrs/tree/23.2.0) - 2023-12-31
-
-### Changes
-
-- The type annotation for `attrs.resolve_types()` is now correct.
-  [#1141](https://github.com/python-attrs/attrs/issues/1141)
-- Type stubs now use `typing.dataclass_transform` to decorate dataclass-like decorators, instead of the non-standard `__dataclass_transform__` special form, which is only supported by Pyright.
-  [#1158](https://github.com/python-attrs/attrs/issues/1158)
-- Fixed serialization of namedtuple fields using `attrs.asdict/astuple()` with `retain_collection_types=True`.
-  [#1165](https://github.com/python-attrs/attrs/issues/1165)
-- `attrs.AttrsInstance` is now a `typing.Protocol` in both type hints and code.
-  This allows you to subclass it along with another `Protocol`.
-  [#1172](https://github.com/python-attrs/attrs/issues/1172)
-- If *attrs* detects that `__attrs_pre_init__` accepts more than just `self`, it will call it with the same arguments as `__init__` was called.
-  This allows you to, for example, pass arguments to `super().__init__()`.
-  [#1187](https://github.com/python-attrs/attrs/issues/1187)
-- Slotted classes now transform `functools.cached_property` decorated methods to support equivalent semantics.
-  [#1200](https://github.com/python-attrs/attrs/issues/1200)
-- Added *class_body* argument to `attrs.make_class()` to provide additional attributes for newly created classes.
-  It is, for example, now possible to attach methods.
-  [#1203](https://github.com/python-attrs/attrs/issues/1203)
 
 ## [23.1.0](https://github.com/python-attrs/attrs/tree/23.1.0) - 2023-04-16
 
@@ -54,7 +32,7 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
 
 - The support for *zope-interface* via the `attrs.validators.provides` validator is now deprecated and will be removed in, or after, April 2024.
 
-  The presence of a C-based package in our development dependencies has caused headaches and we're not under the impression it's used a lot.
+  The presence of a C-based package in our developement dependencies has caused headaches and we're not under the impression it's used a lot.
 
   Let us know if you're using it and we might publish it as a separate package.
   [#1120](https://github.com/python-attrs/attrs/issues/1120)
@@ -606,7 +584,7 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
   That callable must return a string and is then used for formatting the attribute by the generated `__repr__()` method.
   [#568](https://github.com/python-attrs/attrs/issues/568)
 - Added `attr.__version_info__` that can be used to reliably check the version of `attrs` and write forward- and backward-compatible code.
-  Please check out the [section on deprecated APIs](https://www.attrs.org/en/stable/api-attr.html#deprecated-apis) on how to use it.
+  Please check out the [section on deprecated APIs](https://www.attrs.org/en/stable/api.html#deprecated-apis) on how to use it.
   [#580](https://github.com/python-attrs/attrs/issues/580)
 
 >

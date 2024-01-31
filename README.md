@@ -8,11 +8,19 @@
 </p>
 
 <p align="center">
-   <a href="https://www.attrs.org/en/stable/"><img src="https://img.shields.io/badge/Docs-RTD-black" alt="Documentation" /></a>
-   <a href="https://github.com/python-attrs/attrs/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-C06524" alt="License: MIT" /></a>
+   <a href="https://www.attrs.org/en/stable/">
+       <img src="https://img.shields.io/badge/Docs-RTD-black" alt="Documentation" />
+   </a>
+   <a href="https://github.com/python-attrs/attrs/blob/main/LICENSE">
+      <img src="https://img.shields.io/badge/license-MIT-C06524" alt="License: MIT" />
+   </a>
    <a href="https://bestpractices.coreinfrastructure.org/projects/6482"><img src="https://bestpractices.coreinfrastructure.org/projects/6482/badge"></a>
-   <a href="https://pypi.org/project/attrs/"><img src="https://img.shields.io/pypi/v/attrs" /></a>
-   <a href="https://pepy.tech/project/attrs"><img src="https://static.pepy.tech/personalized-badge/attrs?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads%20/%20Month" alt="Downloads per month" /></a>
+   <a href="https://pypi.org/project/attrs/">
+      <img src="https://img.shields.io/pypi/v/attrs" />
+   </a>
+   <a href="https://pepy.tech/project/attrs">
+      <img src="https://static.pepy.tech/personalized-badge/attrs?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads%20/%20Month" alt="Downloads per month" />
+   </a>
    <a href="https://zenodo.org/badge/latestdoi/29918975"><img src="https://zenodo.org/badge/29918975.svg" alt="DOI"></a>
 </p>
 
@@ -30,9 +38,21 @@ Its main goal is to help you to write **concise** and **correct** software witho
 Especially those generously supporting us at the *The Organization* tier and higher:
 
 <p align="center">
-   <a href="https://www.variomedia.de/"><img src="https://www.attrs.org/en/latest/_static/sponsors/Variomedia.svg" width="200" height="60" /></a>
-   <a href="https://tidelift.com/subscription/pkg/pypi-attrs?utm_source=pypi-attrs&utm_medium=referral&utm_campaign=enterprise&utm_term=repo"><img src="https://www.attrs.org/en/latest/_static/sponsors/Tidelift.svg" width="200" height="60" /></a>
-   <a href="https://filepreviews.io/"><img src="https://www.attrs.org/en/latest/_static/sponsors/FilePreviews.svg" width="200" height="60"/></a>
+   <a href="https://www.variomedia.de/">
+      <img src="https://raw.githubusercontent.com/python-attrs/attrs/main/.github/sponsors/Variomedia.svg" width="200" height="60"></img>
+   </a>
+
+   <a href="https://tidelift.com/subscription/pkg/pypi-attrs?utm_source=pypi-attrs&utm_medium=referral&utm_campaign=enterprise&utm_term=repo">
+      <img src="https://raw.githubusercontent.com/python-attrs/attrs/main/.github/sponsors/Tidelift.svg" width="200" height="60"></img>
+   </a>
+
+   <a href="https://sentry.io/">
+      <img src="https://raw.githubusercontent.com/python-attrs/attrs/main/.github/sponsors/Sentry.svg" width="200" height="60"></img>
+   </a>
+
+   <a href="https://filepreviews.io/">
+      <img src="https://raw.githubusercontent.com/python-attrs/attrs/main/.github/sponsors/FilePreviews.svg" width="200" height="60"></img>
+   </a>
 </p>
 
 <p align="center">
@@ -101,7 +121,7 @@ Simply assign `attrs.field()` to the attributes instead of annotating them with 
 This example uses *attrs*'s modern APIs that have been introduced in version 20.1.0, and the *attrs* package import name that has been added in version 21.3.0.
 The classic APIs (`@attr.s`, `attr.ib`, plus their serious-business aliases) and the `attr` package import name will remain **indefinitely**.
 
-Check out [*On The Core API Names*](https://www.attrs.org/en/latest/names.html) for an in-depth explanation!
+Please check out [*On The Core API Names*](https://www.attrs.org/en/latest/names.html) for a more in-depth explanation.
 
 
 ## Data Classes
@@ -121,7 +141,8 @@ For more details, please refer to our [comparison page](https://www.attrs.org/en
 - [**Source Code**](https://github.com/python-attrs/attrs)
 - [**Contributing**](https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md)
 - [**Third-party Extensions**](https://github.com/python-attrs/attrs/wiki/Extensions-to-attrs)
-- **Get Help**: use the `python-attrs` tag on [Stack Overflow](https://stackoverflow.com/questions/tagged/python-attrs)
+- **License**: [MIT](https://www.attrs.org/en/latest/license.html)
+- **Get Help**: please use the `python-attrs` tag on [StackOverflow](https://stackoverflow.com/questions/tagged/python-attrs)
 
 
 ### *attrs* for Enterprise

@@ -10,7 +10,7 @@ class Define:
     b: int
 
 
-reveal_type(Define.__init__)  # noqa: F821
+reveal_type(Define.__init__)  # noqa
 
 
 @attr.define()
@@ -19,7 +19,7 @@ class DefineConverter:
     with_converter: int = attr.field(converter=int)
 
 
-reveal_type(DefineConverter.__init__)  # noqa: F821
+reveal_type(DefineConverter.__init__)  # noqa
 
 DefineConverter(with_converter=b"42")
 
@@ -32,7 +32,7 @@ class Frozen:
 d = Frozen("a")
 d.a = "new"
 
-reveal_type(d.a)  # noqa: F821
+reveal_type(d.a)  # noqa
 
 
 @attr.define(frozen=True)
@@ -43,7 +43,7 @@ class FrozenDefine:
 d2 = FrozenDefine("a")
 d2.a = "new"
 
-reveal_type(d2.a)  # noqa: F821
+reveal_type(d2.a)  # noqa
 
 
 # Field-aliasing works
@@ -54,7 +54,7 @@ class AliasedField:
 
 af = AliasedField(42)
 
-reveal_type(af.__init__)  # noqa: F821
+reveal_type(af.__init__)  # noqa
 
 
 # unsafe_hash is accepted
