@@ -209,17 +209,16 @@
     reveal_type(A)  # N: Revealed type is "def (b: Any) -> main.A"
 
 - case: testAttrsCmpTrue
-  regex: true
   main: |
     from attr import attrib, attrs
     @attrs(auto_attribs=True)
     class A:
         a: int
-    reveal_type(A)  # N: Revealed type is "def \(a: builtins.int\) -> main.A"
-    reveal_type(A.__lt__)  # N: Revealed type is "def \[_AT\] \(self: _AT`\d+, other: _AT`\d+\) -> builtins.bool"
-    reveal_type(A.__le__)  # N: Revealed type is "def \[_AT\] \(self: _AT`\d+, other: _AT`\d+\) -> builtins.bool"
-    reveal_type(A.__gt__)  # N: Revealed type is "def \[_AT\] \(self: _AT`\d+, other: _AT`\d+\) -> builtins.bool"
-    reveal_type(A.__ge__)  # N: Revealed type is "def \[_AT\] \(self: _AT`\d+, other: _AT`\d+\) -> builtins.bool"
+    reveal_type(A)  # N: Revealed type is "def (a: builtins.int) -> main.A"
+    reveal_type(A.__lt__)  # N: Revealed type is "def [_AT] (self: _AT`-1, other: _AT`-1) -> builtins.bool"
+    reveal_type(A.__le__)  # N: Revealed type is "def [_AT] (self: _AT`-1, other: _AT`-1) -> builtins.bool"
+    reveal_type(A.__gt__)  # N: Revealed type is "def [_AT] (self: _AT`-1, other: _AT`-1) -> builtins.bool"
+    reveal_type(A.__ge__)  # N: Revealed type is "def [_AT] (self: _AT`-1, other: _AT`-1) -> builtins.bool"
 
     A(1) < A(2)
     A(1) <= A(2)
@@ -228,17 +227,17 @@
     A(1) == A(2)
     A(1) != A(2)
 
-    A(1) < 1  # E: Unsupported operand types for < \("A" and "int"\)  \[operator\]
-    A(1) <= 1  # E: Unsupported operand types for <= \("A" and "int"\)  \[operator\]
-    A(1) > 1  # E: Unsupported operand types for > \("A" and "int"\)  \[operator\]
-    A(1) >= 1  # E: Unsupported operand types for >= \("A" and "int"\)  \[operator\]
+    A(1) < 1  # E: Unsupported operand types for < ("A" and "int")  [operator]
+    A(1) <= 1  # E: Unsupported operand types for <= ("A" and "int")  [operator]
+    A(1) > 1  # E: Unsupported operand types for > ("A" and "int")  [operator]
+    A(1) >= 1  # E: Unsupported operand types for >= ("A" and "int")  [operator]
     A(1) == 1
     A(1) != 1
 
-    1 < A(1)  # E: Unsupported operand types for < \("int" and "A"\)  \[operator\]
-    1 <= A(1)  # E: Unsupported operand types for <= \("int" and "A"\)  \[operator\]
-    1 > A(1)  # E: Unsupported operand types for > \("int" and "A"\)  \[operator\]
-    1 >= A(1)  # E: Unsupported operand types for >= \("int" and "A"\)  \[operator\]
+    1 < A(1)  # E: Unsupported operand types for < ("int" and "A")  [operator]
+    1 <= A(1)  # E: Unsupported operand types for <= ("int" and "A")  [operator]
+    1 > A(1)  # E: Unsupported operand types for > ("int" and "A")  [operator]
+    1 >= A(1)  # E: Unsupported operand types for >= ("int" and "A")  [operator]
     1 == A(1)
     1 != A(1)
 
@@ -767,7 +766,7 @@
             return 'hello'
 
 - case: testAttrsUsingBadConverter
-  regex: true
+  mypy_config: strict_optional = False
   main: |
     import attr
     from typing import overload
@@ -787,14 +786,14 @@
         bad_overloaded: int = attr.ib(converter=bad_overloaded_converter)
     reveal_type(A)
   out: |
-    main:15: error: Cannot determine __init__ type from converter  \[misc\]
-    main:15: error: Argument "converter" has incompatible type \"Callable\[\[\], str\]\"; expected (\"Callable\[\[Any\], Any\] \| None\"|\"Optional\[Callable\[\[Any\], Any\]\]\")  \[arg-type\]
-    main:16: error: Cannot determine __init__ type from converter  \[misc\]
-    main:16: error: Argument "converter" has incompatible type overloaded function; expected (\"Callable\[\[Any\], Any\] \| None\"|\"Optional\[Callable\[\[Any\], Any\]\]\")  \[arg-type\]
-    main:17: note: Revealed type is "def (bad: Any, bad_overloaded: Any\) -> main.A"
+    main:15: error: Cannot determine __init__ type from converter  [misc]
+    main:15: error: Argument "converter" has incompatible type "Callable[[], str]"; expected "Callable[[Any], Any]"  [arg-type]
+    main:16: error: Cannot determine __init__ type from converter  [misc]
+    main:16: error: Argument "converter" has incompatible type overloaded function; expected "Callable[[Any], Any]"  [arg-type]
+    main:17: note: Revealed type is "def (bad: Any, bad_overloaded: Any) -> main.A"
 
 - case: testAttrsUsingBadConverterReprocess
-  regex: true
+  mypy_config: strict_optional = False
   main: |
     import attr
     from typing import overload
@@ -815,11 +814,11 @@
         bad_overloaded: int = attr.ib(converter=bad_overloaded_converter)
     reveal_type(A)
   out: |
-    main:16: error: Cannot determine __init__ type from converter  \[misc\]
-    main:16: error: Argument \"converter\" has incompatible type \"Callable\[\[\], str\]\"; expected (\"Callable\[\[Any\], Any\] \| None\"|\"Optional\[Callable\[\[Any\], Any\]\]\")  \[arg-type\]
-    main:17: error: Cannot determine __init__ type from converter  \[misc\]
-    main:17: error: Argument "converter" has incompatible type overloaded function; expected (\"Callable\[\[Any\], Any\] \| None\"|\"Optional\[Callable\[\[Any\], Any\]\]\")  \[arg-type\]
-    main:18: note: Revealed type is "def (bad: Any, bad_overloaded: Any\) -> main.A"
+    main:16: error: Cannot determine __init__ type from converter  [misc]
+    main:16: error: Argument "converter" has incompatible type "Callable[[], str]"; expected "Callable[[Any], Any]"  [arg-type]
+    main:17: error: Cannot determine __init__ type from converter  [misc]
+    main:17: error: Argument "converter" has incompatible type overloaded function; expected "Callable[[Any], Any]"  [arg-type]
+    main:18: note: Revealed type is "def (bad: Any, bad_overloaded: Any) -> main.A"
 
 - case: testAttrsUsingUnsupportedConverter
   main: |
@@ -875,7 +874,6 @@
     o = C(1, 2, "3")
 
 - case: testAttrsCmpWithSubclasses
-  regex: true
   main: |
     import attr
     @attr.s
@@ -887,29 +885,29 @@
     @attr.s
     class D(A): pass
 
-    reveal_type(A.__lt__)  # N: Revealed type is "def \[_AT\] \(self: _AT`\d+, other: _AT`\d+\) -> builtins.bool"
-    reveal_type(B.__lt__)  # N: Revealed type is "def \[_AT\] \(self: _AT`\d+, other: _AT`\d+\) -> builtins.bool"
-    reveal_type(C.__lt__)  # N: Revealed type is "def \[_AT\] \(self: _AT`\d+, other: _AT`\d+\) -> builtins.bool"
-    reveal_type(D.__lt__)  # N: Revealed type is "def \[_AT\] \(self: _AT`\d+, other: _AT`\d+\) -> builtins.bool"
+    reveal_type(A.__lt__)  # N: Revealed type is "def [_AT] (self: _AT`-1, other: _AT`-1) -> builtins.bool"
+    reveal_type(B.__lt__)  # N: Revealed type is "def [_AT] (self: _AT`-1, other: _AT`-1) -> builtins.bool"
+    reveal_type(C.__lt__)  # N: Revealed type is "def [_AT] (self: _AT`-1, other: _AT`-1) -> builtins.bool"
+    reveal_type(D.__lt__)  # N: Revealed type is "def [_AT] (self: _AT`-1, other: _AT`-1) -> builtins.bool"
 
     A() < A()
     B() < B()
-    A() < B() # E: Unsupported operand types for < \("A" and "B"\)  \[operator\]
+    A() < B() # E: Unsupported operand types for < ("A" and "B")  [operator]
 
     C() > A()
     C() > B()
     C() > C()
-    C() > D() # E: Unsupported operand types for > \("C" and "D"\)  \[operator\]
+    C() > D() # E: Unsupported operand types for > ("C" and "D")  [operator]
 
     D() >= A()
-    D() >= B()  # E: Unsupported operand types for >= \("D" and "B"\)  \[operator\]
-    D() >= C()  # E: Unsupported operand types for >= \("D" and "C"\)  \[operator\]
+    D() >= B()  # E: Unsupported operand types for >= ("D" and "B")  [operator]
+    D() >= C()  # E: Unsupported operand types for >= ("D" and "C")  [operator]
     D() >= D()
 
-    A() <= 1  # E: Unsupported operand types for <= \("A" and "int"\)  \[operator\]
-    B() <= 1  # E: Unsupported operand types for <= \("B" and "int"\)  \[operator\]
-    C() <= 1  # E: Unsupported operand types for <= \("C" and "int"\)  \[operator\]
-    D() <= 1  # E: Unsupported operand types for <= \("D" and "int"\)  \[operator\]
+    A() <= 1  # E: Unsupported operand types for <= ("A" and "int")  [operator]
+    B() <= 1  # E: Unsupported operand types for <= ("B" and "int")  [operator]
+    C() <= 1  # E: Unsupported operand types for <= ("C" and "int")  [operator]
+    D() <= 1  # E: Unsupported operand types for <= ("D" and "int")  [operator]
 
 - case: testAttrsComplexSuperclass
   main: |
@@ -1077,7 +1075,7 @@
         return 7
     @attr.s
     class A:
-        x: int = attr.ib(factory=list)  # E: Incompatible types in assignment \(expression has type "[Ll]ist\[.*\]", variable has type "int"\)  \[assignment\]
+        x: int = attr.ib(factory=list)  # E: Incompatible types in assignment \(expression has type "[Ll]ist\[_T\]", variable has type "int"\)  \[assignment\]
         y: str = attr.ib(factory=my_factory) # E: Incompatible types in assignment \(expression has type "int", variable has type "str"\)  \[assignment\]
 
 - case: testAttrsDefaultAndInit
@@ -1360,7 +1358,6 @@
     reveal_type(B)  # N: Revealed type is "def (foo: builtins.int) -> main.B"
 
 - case: testFields
-  regex: true
   main: |
     from attrs import define, fields
 
@@ -1369,7 +1366,7 @@
       a: int
       b: str
 
-    reveal_type(fields(A))  # N: Revealed type is "[Tt]uple\[attr.Attribute\[builtins.int\], attr.Attribute\[builtins.str\], fallback=main.A.__main_A_AttrsAttributes__\]"
+    reveal_type(fields(A))  # N: Revealed type is "Any"
 
 - case: testFieldsError
   regex: true

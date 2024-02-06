@@ -27,7 +27,7 @@ class PyrightDiagnostic:
 
 
 def parse_pyright_output(test_file: Path) -> set[PyrightDiagnostic]:
-    pyright = subprocess.run(  # noqa: PLW1510
+    pyright = subprocess.run(
         ["pyright", "--outputjson", str(test_file)], capture_output=True
     )
 
@@ -41,8 +41,8 @@ def parse_pyright_output(test_file: Path) -> set[PyrightDiagnostic]:
 
 def test_pyright_baseline():
     """
-    The typing.dataclass_transform decorator allows pyright to determine
-    attrs decorated class types.
+    The __dataclass_transform__ decorator allows pyright to determine attrs
+    decorated class types.
     """
 
     test_file = Path(__file__).parent / "dataclass_transform_example.py"
@@ -65,7 +65,7 @@ def test_pyright_baseline():
         PyrightDiagnostic(
             severity="error",
             message='Cannot assign member "a" for type '
-            '"Frozen"\n\xa0\xa0"Frozen" is frozen\n\xa0\xa0\xa0\xa0Member "__set__" is unknown',
+            '"Frozen"\n\xa0\xa0"Frozen" is frozen',
         ),
         PyrightDiagnostic(
             severity="information",
@@ -74,8 +74,7 @@ def test_pyright_baseline():
         PyrightDiagnostic(
             severity="error",
             message='Cannot assign member "a" for type '
-            '"FrozenDefine"\n\xa0\xa0"FrozenDefine" is frozen\n\xa0\xa0\xa0\xa0'
-            'Member "__set__" is unknown',
+            '"FrozenDefine"\n\xa0\xa0"FrozenDefine" is frozen',
         ),
         PyrightDiagnostic(
             severity="information",
