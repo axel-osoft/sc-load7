@@ -14,7 +14,7 @@ Release **{sub-ref}`release`**  ([What's new?](changelog.md))
 The recommended installation method is [pip](https://pip.pypa.io/en/stable/)-installing into a [virtualenv](https://hynek.me/articles/virtualenv-lives/):
 
 ```console
-$ python -Im pip install attrs
+$ python -m pip install attrs
 ```
 
 The next steps will get you up and running in no time:
@@ -46,10 +46,10 @@ If you need any help while getting started, feel free to use the `python-attrs` 
 - Finally, if you're confused by all the `attr.s`, `attr.ib`, `attrs`, `attrib`, `define`, `frozen`, and `field`, head over to {doc}`names` for a very short explanation, and optionally a quick history lesson.
 
 
-## *attrs* for Enterprise
+## Project Information
 
 ```{include} ../README.md
-:start-after: '### *attrs* for Enterprise'
+:start-after: '## Project Information'
 ```
 
 ---
@@ -70,21 +70,15 @@ api
 api-attr
 extending
 how-does-it-work
+names
 glossary
 ```
 
 ```{toctree}
-:caption: Meta
 :maxdepth: 1
 
-names
 license
 changelog
-PyPI <https://pypi.org/project/attrs/>
-GitHub <https://github.com/python-attrs/attrs>
-Third-party Extensions <https://github.com/python-attrs/attrs/wiki/Extensions-to-attrs>
-Contributing <https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md>
-Funding <https://hynek.me/say-thanks/>
 ```
 
 [Full Index](genindex)

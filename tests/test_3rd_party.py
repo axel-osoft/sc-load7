@@ -19,7 +19,7 @@ class TestCloudpickleCompat:
     Tests for compatibility with ``cloudpickle``.
     """
 
-    @given(simple_classes(cached_property=False))
+    @given(simple_classes())
     def test_repr(self, cls):
         """
         attrs instances can be pickled and un-pickled with cloudpickle.

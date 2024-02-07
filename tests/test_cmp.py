@@ -63,9 +63,7 @@ class TestEqOrder:
     #########
     # eq
     #########
-    @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), cmp_data, ids=cmp_ids
-    )
+    @pytest.mark.parametrize("cls, requires_same_type", cmp_data, ids=cmp_ids)
     def test_equal_same_type(self, cls, requires_same_type):
         """
         Equal objects are detected as equal.
@@ -73,9 +71,7 @@ class TestEqOrder:
         assert cls(1) == cls(1)
         assert not (cls(1) != cls(1))
 
-    @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), cmp_data, ids=cmp_ids
-    )
+    @pytest.mark.parametrize("cls, requires_same_type", cmp_data, ids=cmp_ids)
     def test_unequal_same_type(self, cls, requires_same_type):
         """
         Unequal objects of correct type are detected as unequal.
@@ -83,9 +79,7 @@ class TestEqOrder:
         assert cls(1) != cls(2)
         assert not (cls(1) == cls(2))
 
-    @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), cmp_data, ids=cmp_ids
-    )
+    @pytest.mark.parametrize("cls, requires_same_type", cmp_data, ids=cmp_ids)
     def test_equal_different_type(self, cls, requires_same_type):
         """
         Equal values of different types are detected appropriately.
@@ -96,9 +90,7 @@ class TestEqOrder:
     #########
     # lt
     #########
-    @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), eq_data, ids=eq_ids
-    )
+    @pytest.mark.parametrize("cls, requires_same_type", eq_data, ids=eq_ids)
     def test_lt_unorderable(self, cls, requires_same_type):
         """
         TypeError is raised if class does not implement __lt__.
@@ -107,7 +99,7 @@ class TestEqOrder:
             cls(1) < cls(2)
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_lt_same_type(self, cls, requires_same_type):
         """
@@ -117,7 +109,7 @@ class TestEqOrder:
         assert not (cls(2) < cls(1))
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_not_lt_same_type(self, cls, requires_same_type):
         """
@@ -127,7 +119,7 @@ class TestEqOrder:
         assert not (cls(1) >= cls(2))
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_lt_different_type(self, cls, requires_same_type):
         """
@@ -145,9 +137,7 @@ class TestEqOrder:
     #########
     # le
     #########
-    @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), eq_data, ids=eq_ids
-    )
+    @pytest.mark.parametrize("cls, requires_same_type", eq_data, ids=eq_ids)
     def test_le_unorderable(self, cls, requires_same_type):
         """
         TypeError is raised if class does not implement __le__.
@@ -156,7 +146,7 @@ class TestEqOrder:
             cls(1) <= cls(2)
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_le_same_type(self, cls, requires_same_type):
         """
@@ -167,7 +157,7 @@ class TestEqOrder:
         assert not (cls(2) <= cls(1))
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_not_le_same_type(self, cls, requires_same_type):
         """
@@ -178,7 +168,7 @@ class TestEqOrder:
         assert not (cls(1) > cls(2))
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_le_different_type(self, cls, requires_same_type):
         """
@@ -197,9 +187,7 @@ class TestEqOrder:
     #########
     # gt
     #########
-    @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), eq_data, ids=eq_ids
-    )
+    @pytest.mark.parametrize("cls, requires_same_type", eq_data, ids=eq_ids)
     def test_gt_unorderable(self, cls, requires_same_type):
         """
         TypeError is raised if class does not implement __gt__.
@@ -208,7 +196,7 @@ class TestEqOrder:
             cls(2) > cls(1)
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_gt_same_type(self, cls, requires_same_type):
         """
@@ -218,7 +206,7 @@ class TestEqOrder:
         assert not (cls(1) > cls(2))
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_not_gt_same_type(self, cls, requires_same_type):
         """
@@ -228,7 +216,7 @@ class TestEqOrder:
         assert not (cls(2) <= cls(1))
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_gt_different_type(self, cls, requires_same_type):
         """
@@ -246,9 +234,7 @@ class TestEqOrder:
     #########
     # ge
     #########
-    @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), eq_data, ids=eq_ids
-    )
+    @pytest.mark.parametrize("cls, requires_same_type", eq_data, ids=eq_ids)
     def test_ge_unorderable(self, cls, requires_same_type):
         """
         TypeError is raised if class does not implement __ge__.
@@ -257,7 +243,7 @@ class TestEqOrder:
             cls(2) >= cls(1)
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_ge_same_type(self, cls, requires_same_type):
         """
@@ -268,7 +254,7 @@ class TestEqOrder:
         assert not (cls(1) >= cls(2))
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_not_ge_same_type(self, cls, requires_same_type):
         """
@@ -279,7 +265,7 @@ class TestEqOrder:
         assert not (cls(2) < cls(1))
 
     @pytest.mark.parametrize(
-        ("cls", "requires_same_type"), order_data, ids=order_ids
+        "cls, requires_same_type", order_data, ids=order_ids
     )
     def test_ge_different_type(self, cls, requires_same_type):
         """
