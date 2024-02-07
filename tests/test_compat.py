@@ -4,8 +4,6 @@ import types
 
 import pytest
 
-import attr
-
 
 @pytest.fixture(name="mp")
 def _mp():
@@ -52,12 +50,3 @@ class TestMetadataProxy:
 
         with pytest.raises(AttributeError, match="no attribute 'setdefault'"):
             mp.setdefault("x")
-
-
-def test_attrsinstance_subclass_protocol():
-    """
-    It's possible to subclass AttrsInstance and Protocol at once.
-    """
-
-    class Foo(attr.AttrsInstance, attr._compat.Protocol):
-        def attribute(self) -> int: ...

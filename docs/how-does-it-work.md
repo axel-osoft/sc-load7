@@ -61,13 +61,11 @@ Depending on whether a class is a dict class or a slotted class, *attrs* uses a 
 
 Once constructed, frozen instances don't differ in any way from regular ones except that you cannot change its attributes.
 
-
 ### Dict Classes
 
 Dict classes -- i.e. regular classes -- simply assign the value directly into the class' eponymous `__dict__` (and there's nothing we can do to stop the user to do the same).
 
 The performance impact is negligible.
-
 
 ### Slotted Classes
 
@@ -98,24 +96,3 @@ Pick what's more important to you.
 You should avoid instantiating lots of frozen slotted classes (i.e. `@frozen`) in performance-critical code.
 
 Frozen dict classes have barely a performance impact, unfrozen slotted classes are even *faster* than unfrozen dict classes (i.e. regular classes).
-
-
-(how-slotted-cached_property)=
-
-## Cached Properties on Slotted Classes
-
-By default, the standard library {func}`functools.cached_property` decorator does not work on slotted classes, because it requires a `__dict__` to store the cached value.
-This could be surprising when using *attrs*, as slotted classes are the default.
-Therefore, *attrs* converts `cached_property`-decorated methods when constructing slotted classes.
-
-Getting this working is achieved by:
-
-* Adding names to `__slots__` for the wrapped methods.
-* Adding a `__getattr__` method to set values on the wrapped methods.
-
-For most users, this should mean that it works transparently.
-
-:::{note}
-The implementation does not guarantee that the wrapped method is called only once in multi-threaded usage.
-This matches the implementation of `cached_property` in Python 3.12.
-:::
