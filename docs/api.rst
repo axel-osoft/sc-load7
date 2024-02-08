@@ -442,10 +442,10 @@ All objects from ``attrs.validators`` are also available from ``attr.validators`
       ...     val = field(validator=attrs.validators.in_([1, 2, 3]))
       >>> C(State.ON, 1)
       C(state=<State.ON: 'on'>, val=1)
-      >>> C("On", 1)
+      >>> C("on", 1)
       Traceback (most recent call last):
          ...
-      ValueError: 'state' must be in <enum 'State'> (got 'On'), Attribute(name='state', default=NOTHING, validator=<in_ validator with options <enum 'State'>>, repr=True, eq=True, eq_key=None, order=True, order_key=None, hash=None, init=True, metadata=mappingproxy({}), type=None, converter=None, kw_only=False, inherited=False, on_setattr=None), <enum 'State'>, 'on')
+      ValueError: 'state' must be in <enum 'State'> (got 'on'), Attribute(name='state', default=NOTHING, validator=<in_ validator with options <enum 'State'>>, repr=True, eq=True, eq_key=None, order=True, order_key=None, hash=None, init=True, metadata=mappingproxy({}), type=None, converter=None, kw_only=False, inherited=False, on_setattr=None), <enum 'State'>, 'on')
       >>> C(State.ON, 4)
       Traceback (most recent call last):
       ...
@@ -536,7 +536,7 @@ All objects from ``attrs.validators`` are also available from ``attr.validators`
         >>> @define
         ... class User:
         ...     email = field(validator=attrs.validators.matches_re(
-        ...         r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"))
+        ...         "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"))
         >>> User(email="user@example.com")
         User(email='user@example.com')
         >>> User(email="user@example.com@test.com")
@@ -681,7 +681,7 @@ Setters
 
 .. module:: attrs.setters
 
-These are helpers that you can use together with `attrs.define`'s and `attrs.field`'s ``on_setattr`` arguments.
+These are helpers that you can use together with `attrs.define`'s and `attrs.fields`'s ``on_setattr`` arguments.
 All setters in ``attrs.setters`` are also available from ``attr.setters`` (it's the same module in a different namespace).
 
 .. autofunction:: frozen

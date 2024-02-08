@@ -43,26 +43,6 @@ False
 
 As shown, the generated `__init__` method allows for both positional and keyword arguments.
 
----
-
-Unlike Data Classes, *attrs* doesn't force you to use type annotations.
-So, the previous example could also have been written as:
-
-```{doctest}
->>> @define
-... class Coordinates:
-...     x = field()
-...     y = field()
->>> Coordinates(1, 2)
-Coordinates(x=1, y=2)
-```
-
-:::{caution}
-If a class body contains a field that is defined using {func}`attrs.field` (or {func}`attr.ib`), but **lacks a type annotation**, *attrs* switches to a no-typing mode and ignores fields that have type annotations but are not defined using {func}`attrs.field` (or {func}`attr.ib`).
-:::
-
----
-
 For private attributes, *attrs* will strip the leading underscores for keyword arguments:
 
 ```{doctest}
@@ -467,9 +447,8 @@ Traceback (most recent call last):
 TypeError: ("'x' must be <type 'int'> (got '42' that is a <type 'str'>).", Attribute(name='x', default=NOTHING, factory=NOTHING, validator=<instance_of validator for type <type 'int'>>, type=None, kw_only=False), <type 'int'>, '42')
 ```
 
-If using the old-school {func}`attr.s` decorator, validators only run on initialization by default.
-If using the newer {func}`attrs.define` and friends, validators run on initialization *and* on attribute setting.
-This behavior can be changed using the *on_setattr* argument.
+Please note that if you use {func}`attr.s` (and **not** {func}`attrs.define`) to define your class, validators only run on initialization by default -- not when you set an attribute.
+This behavior can be changed using the `on_setattr` argument.
 
 Check out {ref}`validators` for more details.
 
@@ -486,14 +465,9 @@ This can be useful for doing type-conversions on values that you don't want to f
 >>> o = C("1")
 >>> o.x
 1
->>> o.x = "2"
->>> o.x
-2
 ```
 
-If using the old-school {func}`attr.s` decorator, converters only run on initialization by default.
-If using the newer {func}`attrs.define` and friends, converters run on initialization *and* on attribute setting.
-This behavior can be changed using the *on_setattr* argument.
+Please note that converters only run on initialization.
 
 Check out {ref}`converters` for more details.
 
@@ -524,7 +498,7 @@ If you're the author of a third-party library with *attrs* integration, please s
 
 ## Types
 
-*attrs* also allows you to associate a type with an attribute using either the *type* argument to using {pep}`526`-annotations or {func}`attrs.field`/{func}`attr.ib`:
+*attrs* also allows you to associate a type with an attribute using either the *type* argument to {func}`attr.ib` and {func}`attr.field` or using {pep}`526`-annotations:
 
 ```{doctest}
 >>> @define
@@ -614,11 +588,6 @@ However it's useful for writing your own validators or serialization frameworks.
 Defining `__slots__` by hand is tedious, in *attrs* it's just a matter of using {func}`attrs.define` or passing `slots=True` to {func}`attr.s`:
 
 ```{doctest}
->>> @define
-... class Coordinates:
-...     x: int
-...     y: int
-
 >>> import attr
 
 >>> @attr.s(slots=True)
@@ -655,7 +624,7 @@ Please note that true immutability is impossible in Python but it will [get](how
 By themselves, immutable classes are useful for long-lived objects that should never change; like configurations for example.
 
 In order to use them in regular program flow, you'll need a way to easily create new instances with changed attributes.
-In Clojure that function is called [*assoc*](https://clojuredocs.org/clojure.core/assoc) and *attrs* shamelessly imitates it: {func}`attrs.evolve`:
+In Clojure that function is called [assoc](https://clojuredocs.org/clojure.core/assoc) and *attrs* shamelessly imitates it: `attr.evolve`:
 
 ```{doctest}
 >>> from attrs import evolve, frozen
@@ -693,7 +662,7 @@ True
 <class 'int'>
 ```
 
-You can still have power over the attributes if you pass a dictionary of name: {func}`~attrs.field` mappings and can pass the same arguments as you can to `@attrs.define`:
+You can still have power over the attributes if you pass a dictionary of name: {func}`~attrs.field` mappings and can pass arguments to `@attr.s`:
 
 ```{doctest}
 >>> C = make_class("C", {"x": field(default=42),
