@@ -248,17 +248,15 @@ def astuple(
             elif isinstance(v, (tuple, list, set, frozenset)):
                 cf = v.__class__ if retain is True else list
                 items = [
-                    (
-                        astuple(
-                            j,
-                            recurse=True,
-                            filter=filter,
-                            tuple_factory=tuple_factory,
-                            retain_collection_types=retain,
-                        )
-                        if has(j.__class__)
-                        else j
+                    astuple(
+                        j,
+                        recurse=True,
+                        filter=filter,
+                        tuple_factory=tuple_factory,
+                        retain_collection_types=retain,
                     )
+                    if has(j.__class__)
+                    else j
                     for j in v
                 ]
                 try:
@@ -274,24 +272,20 @@ def astuple(
                 rv.append(
                     df(
                         (
-                            (
-                                astuple(
-                                    kk,
-                                    tuple_factory=tuple_factory,
-                                    retain_collection_types=retain,
-                                )
-                                if has(kk.__class__)
-                                else kk
-                            ),
-                            (
-                                astuple(
-                                    vv,
-                                    tuple_factory=tuple_factory,
-                                    retain_collection_types=retain,
-                                )
-                                if has(vv.__class__)
-                                else vv
-                            ),
+                            astuple(
+                                kk,
+                                tuple_factory=tuple_factory,
+                                retain_collection_types=retain,
+                            )
+                            if has(kk.__class__)
+                            else kk,
+                            astuple(
+                                vv,
+                                tuple_factory=tuple_factory,
+                                retain_collection_types=retain,
+                            )
+                            if has(vv.__class__)
+                            else vv,
                         )
                         for kk, vv in v.items()
                     )

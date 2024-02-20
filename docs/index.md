@@ -80,9 +80,8 @@ glossary
 names
 license
 changelog
-PyPI <https://pypi.org/project/attrs/>
-GitHub <https://github.com/python-attrs/attrs>
 Third-party Extensions <https://github.com/python-attrs/attrs/wiki/Extensions-to-attrs>
+PyPI <https://pypi.org/project/attrs/>
 Contributing <https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md>
 Funding <https://hynek.me/say-thanks/>
 ```
