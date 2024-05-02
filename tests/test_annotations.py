@@ -426,7 +426,7 @@ class TestAnnotations:
 
         @attr.s(auto_attribs=True, slots=slots)
         class C:
-            cls_var: "typing_extensions.ClassVar" = 23  # noqa: F821
+            cls_var: "typing_extensions.ClassVar" = 23  # noqa
 
         assert_init_annotations(C)
 
@@ -516,34 +516,6 @@ class TestAnnotations:
         assert str is attr.fields(C).y.type
         assert None is attr.fields(C).z.type
 
-    @pytest.mark.skipif(
-        sys.version_info[:2] < (3, 9),
-        reason="Incompatible behavior on older Pythons",
-    )
-    def test_extra_resolve(self):
-        """
-        `get_type_hints` returns extra type hints.
-        """
-        from typing import Annotated
-
-        globals = {"Annotated": Annotated}
-
-        @attr.define
-        class C:
-            x: 'Annotated[float, "test"]'
-
-        attr.resolve_types(C, globals)
-
-        assert attr.fields(C).x.type == Annotated[float, "test"]
-
-        @attr.define
-        class D:
-            x: 'Annotated[float, "test"]'
-
-        attr.resolve_types(D, globals, include_extras=False)
-
-        assert attr.fields(D).x.type == float
-
     def test_resolve_types_auto_attrib(self, slots):
         """
         Types can be resolved even when strings are involved.
@@ -587,7 +559,7 @@ class TestAnnotations:
         @attr.s(slots=slots, auto_attribs=True)
         class A:
             a: "A"
-            b: typing.Optional["A"]  # will resolve below -- noqa: F821
+            b: typing.Optional["A"]  # noqa: will resolve below
 
         attr.resolve_types(A, globals(), locals())
 
@@ -601,7 +573,7 @@ class TestAnnotations:
 
         @attr.s(slots=slots, auto_attribs=True)
         class A:
-            a: typing.List["B"]  # will resolve below -- noqa: F821
+            a: typing.List["B"]  # noqa: will resolve below
 
         @attr.s(slots=slots, auto_attribs=True)
         class B:

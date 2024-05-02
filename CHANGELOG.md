@@ -1,14 +1,22 @@
 # Changelog
 
-Versions follow [Calendar Versioning](https://calver.org) with a strict backwards-compatibility policy.
+Versions follow [CalVer](https://calver.org) with a strict backwards-compatibility policy.
 
 The **first number** of the version is the year.
 The **second number** is incremented with each release, starting at 1 for each year.
 The **third number** is when we need to start branches for older releases (only for emergencies).
 
-You can find our backwards-compatibility policy [here](https://github.com/python-attrs/attrs/blob/main/.github/SECURITY.md).
+Put simply, you shouldn't ever be afraid to upgrade `attrs` if you're only using its public APIs.
+Whenever there is a need to break compatibility, it is announced here in the changelog, and raises a `DeprecationWarning` for a year (if possible) before it's finally really broken.
 
-Changes for the upcoming release can be found in the [`changelog.d` directory](https://github.com/python-attrs/attrs/tree/main/changelog.d) in our repository.
+> **Warning**
+> The structure of the `attrs.Attribute` class is exempt from this rule.
+> It *will* change in the future, but since it should be considered read-only, that shouldn't matter.
+>
+> However if you intend to build extensions on top of `attrs` you have to anticipate that.
+
+
+Changes for the upcoming release can be found in the ["changelog.d" directory](https://github.com/python-attrs/attrs/tree/main/changelog.d) in our repository.
 
 <!--
 Do *NOT* add changelog entries here!
@@ -19,78 +27,6 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
 -->
 
 <!-- towncrier release notes start -->
-
-## [23.2.0](https://github.com/python-attrs/attrs/tree/23.2.0) - 2023-12-31
-
-### Changes
-
-- The type annotation for `attrs.resolve_types()` is now correct.
-  [#1141](https://github.com/python-attrs/attrs/issues/1141)
-- Type stubs now use `typing.dataclass_transform` to decorate dataclass-like decorators, instead of the non-standard `__dataclass_transform__` special form, which is only supported by Pyright.
-  [#1158](https://github.com/python-attrs/attrs/issues/1158)
-- Fixed serialization of namedtuple fields using `attrs.asdict/astuple()` with `retain_collection_types=True`.
-  [#1165](https://github.com/python-attrs/attrs/issues/1165)
-- `attrs.AttrsInstance` is now a `typing.Protocol` in both type hints and code.
-  This allows you to subclass it along with another `Protocol`.
-  [#1172](https://github.com/python-attrs/attrs/issues/1172)
-- If *attrs* detects that `__attrs_pre_init__` accepts more than just `self`, it will call it with the same arguments as `__init__` was called.
-  This allows you to, for example, pass arguments to `super().__init__()`.
-  [#1187](https://github.com/python-attrs/attrs/issues/1187)
-- Slotted classes now transform `functools.cached_property` decorated methods to support equivalent semantics.
-  [#1200](https://github.com/python-attrs/attrs/issues/1200)
-- Added *class_body* argument to `attrs.make_class()` to provide additional attributes for newly created classes.
-  It is, for example, now possible to attach methods.
-  [#1203](https://github.com/python-attrs/attrs/issues/1203)
-
-## [23.1.0](https://github.com/python-attrs/attrs/tree/23.1.0) - 2023-04-16
-
-### Backwards-incompatible Changes
-
-- Python 3.6 has been dropped and packaging switched to static package data using [Hatch](https://hatch.pypa.io/latest/).
-  [#993](https://github.com/python-attrs/attrs/issues/993)
-
-
-### Deprecations
-
-- The support for *zope-interface* via the `attrs.validators.provides` validator is now deprecated and will be removed in, or after, April 2024.
-
-  The presence of a C-based package in our development dependencies has caused headaches and we're not under the impression it's used a lot.
-
-  Let us know if you're using it and we might publish it as a separate package.
-  [#1120](https://github.com/python-attrs/attrs/issues/1120)
-
-
-### Changes
-
-- `attrs.filters.exclude()` and `attrs.filters.include()` now support the passing of attribute names as strings.
-  [#1068](https://github.com/python-attrs/attrs/issues/1068)
-- `attrs.has()` and `attrs.fields()` now handle generic classes correctly.
-  [#1079](https://github.com/python-attrs/attrs/issues/1079)
-- Fix frozen exception classes when raised within, for example, `contextlib.contextmanager`, which mutates their `__traceback__` attributes.
-  [#1081](https://github.com/python-attrs/attrs/issues/1081)
-- `@frozen` now works with type checkers that implement [PEP-681](https://peps.python.org/pep-0681/) (ex. [pyright](https://github.com/microsoft/pyright/)).
-  [#1084](https://github.com/python-attrs/attrs/issues/1084)
-- Restored ability to unpickle instances pickled before 22.2.0.
-  [#1085](https://github.com/python-attrs/attrs/issues/1085)
-- `attrs.asdict()`'s and `attrs.astuple()`'s type stubs now accept the `attrs.AttrsInstance` protocol.
-  [#1090](https://github.com/python-attrs/attrs/issues/1090)
-- Fix slots class cellvar updating closure in CPython 3.8+ even when `__code__` introspection is unavailable.
-  [#1092](https://github.com/python-attrs/attrs/issues/1092)
-- `attrs.resolve_types()` can now pass `include_extras` to `typing.get_type_hints()` on Python 3.9+, and does so by default.
-  [#1099](https://github.com/python-attrs/attrs/issues/1099)
-- Added instructions for pull request workflow to `CONTRIBUTING.md`.
-  [#1105](https://github.com/python-attrs/attrs/issues/1105)
-- Added *type* parameter to `attrs.field()` function for use with `attrs.make_class()`.
-
-  Please note that type checkers ignore type metadata passed into `make_class()`, but it can be useful if you're wrapping _attrs_.
-  [#1107](https://github.com/python-attrs/attrs/issues/1107)
-- It is now possible for `attrs.evolve()` (and `attr.evolve()`) to change fields named `inst` if the instance is passed as a positional argument.
-
-  Passing the instance using the `inst` keyword argument is now deprecated and will be removed in, or after, April 2024.
-  [#1117](https://github.com/python-attrs/attrs/issues/1117)
-- `attrs.validators.optional()` now also accepts a tuple of validators (in addition to lists of validators).
-  [#1122](https://github.com/python-attrs/attrs/issues/1122)
-
 
 ## [22.2.0](https://github.com/python-attrs/attrs/tree/22.2.0) - 2022-12-21
 
@@ -113,7 +49,7 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
   Get `__init__` signatures matching any taste, peculiar or plain!
   The [PEP 681 compatible](https://peps.python.org/pep-0681/#field-specifier-parameters) *alias* option can be use to override private attribute name mangling, or add other arbitrary field argument name overrides.
   [#950](https://github.com/python-attrs/attrs/issues/950)
-- `attrs.NOTHING` is now an enum value, making it possible to use with, for example, [`typing.Literal`](https://docs.python.org/3/library/typing.html#typing.Literal).
+- `attrs.NOTHING` is now an enum value, making it possible to use with e.g. [`typing.Literal`](https://docs.python.org/3/library/typing.html#typing.Literal).
   [#983](https://github.com/python-attrs/attrs/issues/983)
 - Added missing re-import of `attr.AttrsInstance` to the `attrs` namespace.
   [#987](https://github.com/python-attrs/attrs/issues/987)
@@ -195,7 +131,7 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
 ### Backward-incompatible Changes
 
 - When using `@define`, converters are now run by default when setting an attribute on an instance -- additionally to validators.
-  Meaning: the new default is `on_setattr=[attrs.setters.convert, attrs.setters.validate]`.
+  I.e. the new default is `on_setattr=[attrs.setters.convert, attrs.setters.validate]`.
 
   This is unfortunately a breaking change, but it was an oversight, impossible to raise a `DeprecationWarning` about, and it's better to fix it now while the APIs are very fresh with few users.
   [#835](https://github.com/python-attrs/attrs/issues/835),
@@ -349,7 +285,7 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
   See the [new docs on comparison](https://www.attrs.org/en/stable/comparison.html) for more details.
   [#787](https://github.com/python-attrs/attrs/issues/787)
 
-- Added **provisional** support for static typing in `pyright` via [PEP 681](https://peps.python.org/pep-0681/).
+- Added **provisional** support for static typing in `pyright` via the [dataclass_transforms specification](https://github.com/microsoft/pyright/blob/main/specs/dataclass_transforms.md).
   Both the `pyright` specification and `attrs` implementation may change in future versions of both projects.
 
   Your constructive feedback is welcome in both [attrs#795](https://github.com/python-attrs/attrs/issues/795) and [pyright#1782](https://github.com/microsoft/pyright/discussions/1782).
@@ -494,7 +430,7 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
 
 - `attrs` can now automatically detect your own implementations and infer `init=False`, `repr=False`, `eq=False`, `order=False`, and `hash=False` if you set `@attr.s(auto_detect=True)`.
   `attrs` will ignore inherited methods.
-  If the argument implies more than one method (for example, `eq=True` creates both `__eq__` and `__ne__`), it's enough for *one* of them to exist and `attrs` will create *neither*.
+  If the argument implies more than one method (e.g. `eq=True` creates both `__eq__` and `__ne__`), it's enough for *one* of them to exist and `attrs` will create *neither*.
 
   This feature requires Python 3.
   [#607](https://github.com/python-attrs/attrs/issues/607)
@@ -606,7 +542,7 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
   That callable must return a string and is then used for formatting the attribute by the generated `__repr__()` method.
   [#568](https://github.com/python-attrs/attrs/issues/568)
 - Added `attr.__version_info__` that can be used to reliably check the version of `attrs` and write forward- and backward-compatible code.
-  Please check out the [section on deprecated APIs](https://www.attrs.org/en/stable/api-attr.html#deprecated-apis) on how to use it.
+  Please check out the [section on deprecated APIs](https://www.attrs.org/en/stable/api.html#deprecated-apis) on how to use it.
   [#580](https://github.com/python-attrs/attrs/issues/580)
 
 >
@@ -727,7 +663,7 @@ See https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md#chan
   [#290](https://github.com/python-attrs/attrs/issues/290),
   [#349](https://github.com/python-attrs/attrs/issues/349)
 
-- The order of attributes that are passed into `attr.make_class()` or the *these* argument of `@attr.s()` is now retained if the dictionary is ordered (in other words: `dict` on Python 3.6 and later, `collections.OrderedDict` otherwise).
+- The order of attributes that are passed into `attr.make_class()` or the *these* argument of `@attr.s()` is now retained if the dictionary is ordered (i.e. `dict` on Python 3.6 and later, `collections.OrderedDict` otherwise).
 
   Before, the order was always determined by the order in which the attributes have been defined which may not be desirable when creating classes programmatically.
 
@@ -1105,7 +1041,7 @@ To encourage more participation, the project has also been moved into a [dedicat
 ### Changes:
 
 - Added a `convert` argument to `attr.ib`, which allows specifying a function to run on arguments.
-  This allows for simple type conversions, for example, with `attr.ib(convert=int)`.
+  This allows for simple type conversions, e.g. with `attr.ib(convert=int)`.
   [#26](https://github.com/python-attrs/attrs/issues/26)
 - Speed up object creation when attribute validators are used.
   [#28](https://github.com/python-attrs/attrs/issues/28)

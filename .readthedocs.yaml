@@ -1,11 +1,12 @@
 ---
 version: 2
+formats: all
 
 build:
-  os: ubuntu-22.04
+  os: ubuntu-20.04
   tools:
     # Keep version in sync with tox.ini/docs and ci.yml/docs.
-    python: "3.12"
+    python: "3.11"
 
 python:
   install:

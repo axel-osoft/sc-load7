@@ -16,7 +16,7 @@ else:
 
 @pytest.fixture(name="mod", params=(attr, attrs))
 def _mod(request):
-    return request.param
+    yield request.param
 
 
 class TestLegacyMetadataHack:
@@ -44,13 +44,17 @@ class TestLegacyMetadataHack:
             in ws.list[0].message.args[0]
         )
 
-    def test_version(self, mod, recwarn):
+    def test_version(self, mod):
         """
-        __version__ returns the correct version and doesn't warn.
+        __version__ returns the correct version.
         """
-        assert metadata.version("attrs") == mod.__version__
+        with pytest.deprecated_call() as ws:
+            assert metadata.version("attrs") == mod.__version__
 
-        assert [] == recwarn.list
+        assert (
+            f"Accessing {mod.__name__}.__version__ is deprecated"
+            in ws.list[0].message.args[0]
+        )
 
     def test_description(self, mod):
         """
@@ -125,7 +129,7 @@ class TestLegacyMetadataHack:
 
     def test_version_info(self, recwarn, mod):
         """
-        ___version_info__ is not deprecated, therefore doesn't raise a warning
+        ___version_info__ is not deprected, therefore doesn't raise a warning
         and parses correctly.
         """
         assert isinstance(mod.__version_info__, attr.VersionInfo)
