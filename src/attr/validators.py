@@ -35,6 +35,7 @@ __all__ = [
     "min_len",
     "not_",
     "optional",
+    "provides",
     "set_disabled",
 ]
 
@@ -45,7 +46,7 @@ def set_disabled(disabled):
 
     By default, they are run.
 
-    :param disabled: If `True`, disable running all validators.
+    :param disabled: If ``True``, disable running all validators.
     :type disabled: bool
 
     .. warning::
@@ -61,7 +62,7 @@ def get_disabled():
     """
     Return a bool indicating whether validators are currently disabled or not.
 
-    :return: `True` if validators are currently disabled.
+    :return: ``True`` if validators are currently disabled.
     :rtype: bool
 
     .. versionadded:: 21.3.0
@@ -96,28 +97,37 @@ class _InstanceOfValidator:
         We use a callable class to be able to change the ``__repr__``.
         """
         if not isinstance(value, self.type):
-            msg = f"'{attr.name}' must be {self.type!r} (got {value!r} that is a {value.__class__!r})."
             raise TypeError(
-                msg,
+                "'{name}' must be {type!r} (got {value!r} that is a "
+                "{actual!r}).".format(
+                    name=attr.name,
+                    type=self.type,
+                    actual=value.__class__,
+                    value=value,
+                ),
                 attr,
                 self.type,
                 value,
             )
 
     def __repr__(self):
-        return f"<instance_of validator for type {self.type!r}>"
+        return "<instance_of validator for type {type!r}>".format(
+            type=self.type
+        )
 
 
 def instance_of(type):
     """
-    A validator that raises a `TypeError` if the initializer is called with a
-    wrong type for this particular attribute (checks are performed using
+    A validator that raises a `TypeError` if the initializer is called
+    with a wrong type for this particular attribute (checks are performed using
     `isinstance` therefore it's also valid to pass a tuple of types).
 
-    :param type | tuple[type] type: The type to check for.
+    :param type: The type to check for.
+    :type type: type or tuple of type
 
-    :raises TypeError: With a human readable error message, the attribute (of
-        type `attrs.Attribute`), the expected type, and the value it got.
+    :raises TypeError: With a human readable error message, the attribute
+        (of type `attrs.Attribute`), the expected type, and the value it
+        got.
     """
     return _InstanceOfValidator(type)
 
@@ -132,47 +142,56 @@ class _MatchesReValidator:
         We use a callable class to be able to change the ``__repr__``.
         """
         if not self.match_func(value):
-            msg = f"'{attr.name}' must match regex {self.pattern.pattern!r} ({value!r} doesn't)"
             raise ValueError(
-                msg,
+                "'{name}' must match regex {pattern!r}"
+                " ({value!r} doesn't)".format(
+                    name=attr.name, pattern=self.pattern.pattern, value=value
+                ),
                 attr,
                 self.pattern,
                 value,
             )
 
     def __repr__(self):
-        return f"<matches_re validator for pattern {self.pattern!r}>"
+        return "<matches_re validator for pattern {pattern!r}>".format(
+            pattern=self.pattern
+        )
 
 
 def matches_re(regex, flags=0, func=None):
     r"""
-    A validator that raises `ValueError` if the initializer is called with a
-    string that doesn't match *regex*.
+    A validator that raises `ValueError` if the initializer is called
+    with a string that doesn't match *regex*.
 
     :param regex: a regex string or precompiled pattern to match against
     :param int flags: flags that will be passed to the underlying re function
         (default 0)
-    :param typing.Callable func: which underlying `re` function to call. Valid
-        options are `re.fullmatch`, `re.search`, and `re.match`; the default
-        `None` means `re.fullmatch`. For performance reasons, the pattern is
-        always precompiled using `re.compile`.
+    :param callable func: which underlying `re` function to call. Valid options
+        are `re.fullmatch`, `re.search`, and `re.match`; the default ``None``
+        means `re.fullmatch`. For performance reasons, the pattern is always
+        precompiled using `re.compile`.
 
     .. versionadded:: 19.2.0
     .. versionchanged:: 21.3.0 *regex* can be a pre-compiled pattern.
     """
     valid_funcs = (re.fullmatch, None, re.search, re.match)
     if func not in valid_funcs:
-        msg = "'func' must be one of {}.".format(
-            ", ".join(
-                sorted(e and e.__name__ or "None" for e in set(valid_funcs))
+        raise ValueError(
+            "'func' must be one of {}.".format(
+                ", ".join(
+                    sorted(
+                        e and e.__name__ or "None" for e in set(valid_funcs)
+                    )
+                )
             )
         )
-        raise ValueError(msg)
 
     if isinstance(regex, Pattern):
         if flags:
-            msg = "'flags' can only be used with a string pattern; pass flags to re.compile() instead"
-            raise TypeError(msg)
+            raise TypeError(
+                "'flags' can only be used with a string pattern; "
+                "pass flags to re.compile() instead"
+            )
         pattern = regex
     else:
         pattern = re.compile(regex, flags)
@@ -188,6 +207,48 @@ def matches_re(regex, flags=0, func=None):
 
 
 @attrs(repr=False, slots=True, hash=True)
+class _ProvidesValidator:
+    interface = attrib()
+
+    def __call__(self, inst, attr, value):
+        """
+        We use a callable class to be able to change the ``__repr__``.
+        """
+        if not self.interface.providedBy(value):
+            raise TypeError(
+                "'{name}' must provide {interface!r} which {value!r} "
+                "doesn't.".format(
+                    name=attr.name, interface=self.interface, value=value
+                ),
+                attr,
+                self.interface,
+                value,
+            )
+
+    def __repr__(self):
+        return "<provides validator for interface {interface!r}>".format(
+            interface=self.interface
+        )
+
+
+def provides(interface):
+    """
+    A validator that raises a `TypeError` if the initializer is called
+    with an object that does not provide the requested *interface* (checks are
+    performed using ``interface.providedBy(value)`` (see `zope.interface
+    <https://zopeinterface.readthedocs.io/en/latest/>`_).
+
+    :param interface: The interface to check for.
+    :type interface: ``zope.interface.Interface``
+
+    :raises TypeError: With a human readable error message, the attribute
+        (of type `attrs.Attribute`), the expected interface, and the
+        value it got.
+    """
+    return _ProvidesValidator(interface)
+
+
+@attrs(repr=False, slots=True, hash=True)
 class _OptionalValidator:
     validator = attrib()
 
@@ -198,27 +259,26 @@ class _OptionalValidator:
         self.validator(inst, attr, value)
 
     def __repr__(self):
-        return f"<optional validator for {self.validator!r} or None>"
+        return "<optional validator for {what} or None>".format(
+            what=repr(self.validator)
+        )
 
 
 def optional(validator):
     """
     A validator that makes an attribute optional.  An optional attribute is one
-    which can be set to `None` in addition to satisfying the requirements of
+    which can be set to ``None`` in addition to satisfying the requirements of
     the sub-validator.
 
-    :param validator: A validator (or validators) that is used for non-`None`
-        values.
-    :type validator: typing.Callable | tuple[typing.Callable] |
-        list[typing.Callable]
+    :param validator: A validator (or a list of validators) that is used for
+        non-``None`` values.
+    :type validator: callable or `list` of callables.
 
     .. versionadded:: 15.1.0
     .. versionchanged:: 17.1.0 *validator* can be a list of validators.
-    .. versionchanged:: 23.1.0 *validator* can also be a tuple of validators.
     """
-    if isinstance(validator, (list, tuple)):
+    if isinstance(validator, list):
         return _OptionalValidator(_AndValidator(validator))
-
     return _OptionalValidator(validator)
 
 
@@ -233,16 +293,19 @@ class _InValidator:
             in_options = False
 
         if not in_options:
-            msg = f"'{attr.name}' must be in {self.options!r} (got {value!r})"
             raise ValueError(
-                msg,
+                "'{name}' must be in {options!r} (got {value!r})".format(
+                    name=attr.name, options=self.options, value=value
+                ),
                 attr,
                 self.options,
                 value,
             )
 
     def __repr__(self):
-        return f"<in_ validator with options {self.options!r}>"
+        return "<in_ validator with options {options!r}>".format(
+            options=self.options
+        )
 
 
 def in_(options):
@@ -328,8 +391,11 @@ class _DeepIterable:
             else f" {self.iterable_validator!r}"
         )
         return (
-            f"<deep_iterable validator for{iterable_identifier}"
-            f" iterables of {self.member_validator!r}>"
+            "<deep_iterable validator for{iterable_identifier}"
+            " iterables of {member!r}>"
+        ).format(
+            iterable_identifier=iterable_identifier,
+            member=self.member_validator,
         )
 
 
@@ -368,7 +434,9 @@ class _DeepMapping:
             self.value_validator(inst, attr, value[key])
 
     def __repr__(self):
-        return f"<deep_mapping validator for objects mapping {self.key_validator!r} to {self.value_validator!r}>"
+        return (
+            "<deep_mapping validator for objects mapping {key!r} to {value!r}>"
+        ).format(key=self.key_validator, value=self.value_validator)
 
 
 def deep_mapping(key_validator, value_validator, mapping_validator=None):
@@ -398,11 +466,19 @@ class _NumberValidator:
         We use a callable class to be able to change the ``__repr__``.
         """
         if not self.compare_func(value, self.bound):
-            msg = f"'{attr.name}' must be {self.compare_op} {self.bound}: {value}"
-            raise ValueError(msg)
+            raise ValueError(
+                "'{name}' must be {op} {bound}: {value}".format(
+                    name=attr.name,
+                    op=self.compare_op,
+                    bound=self.bound,
+                    value=value,
+                )
+            )
 
     def __repr__(self):
-        return f"<Validator for x {self.compare_op} {self.bound}>"
+        return "<Validator for x {op} {bound}>".format(
+            op=self.compare_op, bound=self.bound
+        )
 
 
 def lt(val):
@@ -462,8 +538,11 @@ class _MaxLengthValidator:
         We use a callable class to be able to change the ``__repr__``.
         """
         if len(value) > self.max_length:
-            msg = f"Length of '{attr.name}' must be <= {self.max_length}: {len(value)}"
-            raise ValueError(msg)
+            raise ValueError(
+                "Length of '{name}' must be <= {max}: {len}".format(
+                    name=attr.name, max=self.max_length, len=len(value)
+                )
+            )
 
     def __repr__(self):
         return f"<max_len validator for {self.max_length}>"
@@ -490,8 +569,11 @@ class _MinLengthValidator:
         We use a callable class to be able to change the ``__repr__``.
         """
         if len(value) < self.min_length:
-            msg = f"Length of '{attr.name}' must be >= {self.min_length}: {len(value)}"
-            raise ValueError(msg)
+            raise ValueError(
+                "Length of '{name}' must be => {min}: {len}".format(
+                    name=attr.name, min=self.min_length, len=len(value)
+                )
+            )
 
     def __repr__(self):
         return f"<min_len validator for {self.min_length}>"
@@ -518,16 +600,22 @@ class _SubclassOfValidator:
         We use a callable class to be able to change the ``__repr__``.
         """
         if not issubclass(value, self.type):
-            msg = f"'{attr.name}' must be a subclass of {self.type!r} (got {value!r})."
             raise TypeError(
-                msg,
+                "'{name}' must be a subclass of {type!r} "
+                "(got {value!r}).".format(
+                    name=attr.name,
+                    type=self.type,
+                    value=value,
+                ),
                 attr,
                 self.type,
                 value,
             )
 
     def __repr__(self):
-        return f"<subclass_of validator for type {self.type!r}>"
+        return "<subclass_of validator for type {type!r}>".format(
+            type=self.type
+        )
 
 
 def _subclass_of(type):
@@ -580,7 +668,12 @@ class _NotValidator:
             )
 
     def __repr__(self):
-        return f"<not_ validator wrapping {self.validator!r}, capturing {self.exc_types!r}>"
+        return (
+            "<not_ validator wrapping {what!r}, " "capturing {exc_types!r}>"
+        ).format(
+            what=self.validator,
+            exc_types=self.exc_types,
+        )
 
 
 def not_(validator, *, msg=None, exc_types=(ValueError, TypeError)):

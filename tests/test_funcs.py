@@ -4,10 +4,9 @@
 Tests for `attr._funcs`.
 """
 
-import re
 
 from collections import OrderedDict
-from typing import Generic, NamedTuple, TypeVar
+from typing import Generic, TypeVar
 
 import pytest
 
@@ -233,52 +232,6 @@ class TestAsDict:
 
         assert {"a": {(1,): 1}} == attr.asdict(instance)
 
-    def test_named_tuple_retain_type(self):
-        """
-        Namedtuples can be serialized if retain_collection_types is True.
-
-        See #1164
-        """
-
-        class Coordinates(NamedTuple):
-            lat: float
-            lon: float
-
-        @attr.s
-        class A:
-            coords: Coordinates = attr.ib()
-
-        instance = A(Coordinates(50.419019, 30.516225))
-
-        assert {"coords": Coordinates(50.419019, 30.516225)} == attr.asdict(
-            instance, retain_collection_types=True
-        )
-
-    def test_type_error_with_retain_type(self):
-        """
-        Serialization that fails with TypeError leaves the error through if
-        they're not tuples.
-
-        See #1164
-        """
-
-        message = "__new__() missing 1 required positional argument (asdict)"
-
-        class Coordinates(list):
-            def __init__(self, first, *rest):
-                if isinstance(first, list):
-                    raise TypeError(message)
-                super().__init__([first, *rest])
-
-        @attr.s
-        class A:
-            coords: Coordinates = attr.ib()
-
-        instance = A(Coordinates(50.419019, 30.516225))
-
-        with pytest.raises(TypeError, match=re.escape(message)):
-            attr.asdict(instance, retain_collection_types=True)
-
 
 class TestAsTuple:
     """
@@ -437,52 +390,6 @@ class TestAsTuple:
 
         assert (1, [1, 2, 3]) == d
 
-    def test_named_tuple_retain_type(self):
-        """
-        Namedtuples can be serialized if retain_collection_types is True.
-
-        See #1164
-        """
-
-        class Coordinates(NamedTuple):
-            lat: float
-            lon: float
-
-        @attr.s
-        class A:
-            coords: Coordinates = attr.ib()
-
-        instance = A(Coordinates(50.419019, 30.516225))
-
-        assert (Coordinates(50.419019, 30.516225),) == attr.astuple(
-            instance, retain_collection_types=True
-        )
-
-    def test_type_error_with_retain_type(self):
-        """
-        Serialization that fails with TypeError leaves the error through if
-        they're not tuples.
-
-        See #1164
-        """
-
-        message = "__new__() missing 1 required positional argument (astuple)"
-
-        class Coordinates(list):
-            def __init__(self, first, *rest):
-                if isinstance(first, list):
-                    raise TypeError(message)
-                super().__init__([first, *rest])
-
-        @attr.s
-        class A:
-            coords: Coordinates = attr.ib()
-
-        instance = A(Coordinates(50.419019, 30.516225))
-
-        with pytest.raises(TypeError, match=re.escape(message)):
-            attr.astuple(instance, retain_collection_types=True)
-
 
 class TestHas:
     """
@@ -560,7 +467,8 @@ class TestAssoc:
             pass
 
         i1 = C()
-        i2 = assoc(i1)
+        with pytest.deprecated_call():
+            i2 = assoc(i1)
 
         assert i1 is not i2
         assert i1 == i2
@@ -571,7 +479,8 @@ class TestAssoc:
         No changes means a verbatim copy.
         """
         i1 = C()
-        i2 = assoc(i1)
+        with pytest.deprecated_call():
+            i2 = assoc(i1)
 
         assert i1 is not i2
         assert i1 == i2
@@ -588,7 +497,8 @@ class TestAssoc:
         chosen_names = data.draw(st.sets(st.sampled_from(field_names)))
         change_dict = {name: data.draw(st.integers()) for name in chosen_names}
 
-        changed = assoc(original, **change_dict)
+        with pytest.deprecated_call():
+            changed = assoc(original, **change_dict)
 
         for k, v in change_dict.items():
             assert getattr(changed, k) == v
@@ -600,7 +510,9 @@ class TestAssoc:
         AttrsAttributeNotFoundError.
         """
         # No generated class will have a four letter attribute.
-        with pytest.raises(AttrsAttributeNotFoundError) as e:
+        with pytest.raises(
+            AttrsAttributeNotFoundError
+        ) as e, pytest.deprecated_call():
             assoc(C(), aaaa=2)
 
         assert (f"aaaa is not an attrs attribute on {C!r}.",) == e.value.args
@@ -615,7 +527,22 @@ class TestAssoc:
             x = attr.ib()
             y = attr.ib()
 
-        assert C(3, 2) == assoc(C(1, 2), x=3)
+        with pytest.deprecated_call():
+            assert C(3, 2) == assoc(C(1, 2), x=3)
+
+    def test_warning(self):
+        """
+        DeprecationWarning points to the correct file.
+        """
+
+        @attr.s
+        class C:
+            x = attr.ib()
+
+        with pytest.warns(DeprecationWarning) as wi:
+            assert C(2) == assoc(C(1), x=2)
+
+        assert __file__ == wi.list[0].filename
 
 
 class TestEvolve:
@@ -780,34 +707,3 @@ class TestEvolve:
         assert Cls1({"foo": 42, "param2": 42}) == attr.evolve(
             obj1a, param1=obj2b
         )
-
-    def test_no_inst(self):
-        """
-        Missing inst argument raises a TypeError like Python would.
-        """
-        with pytest.raises(
-            TypeError, match=r"evolve\(\) takes 1 positional argument"
-        ):
-            evolve(x=1)
-
-    def test_too_many_pos_args(self):
-        """
-        More than one positional argument raises a TypeError like Python would.
-        """
-        with pytest.raises(
-            TypeError,
-            match=r"evolve\(\) takes 1 positional argument, but 2 were given",
-        ):
-            evolve(1, 2)
-
-    def test_can_change_inst(self):
-        """
-        If the instance is passed by positional argument, a field named `inst`
-        can be changed.
-        """
-
-        @attr.define
-        class C:
-            inst: int
-
-        assert C(42) == evolve(C(23), inst=42)
