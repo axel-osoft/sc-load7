@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: MIT
 
-from __future__ import annotations
-
 from datetime import datetime
+from typing import Dict, List
 
 import attr
 
@@ -170,14 +169,14 @@ class TestAsDictHook:
         @attr.dataclass
         class Child:
             x: datetime
-            y: list[datetime]
+            y: List[datetime]
 
         @attr.dataclass
         class Parent:
             a: Child
-            b: list[Child]
-            c: dict[str, Child]
-            d: dict[str, datetime]
+            b: List[Child]
+            c: Dict[str, Child]
+            d: Dict[str, datetime]
 
         inst = Parent(
             a=Child(1, [datetime(2020, 7, 1)]),
@@ -211,8 +210,8 @@ class TestAsDictHook:
         @attr.dataclass
         class Parent:
             a: Child
-            b: list[Child]
-            c: dict[str, Child]
+            b: List[Child]
+            c: Dict[str, Child]
 
         inst = Parent(a=Child(1), b=[Child(2)], c={"spam": Child(3)})
 
