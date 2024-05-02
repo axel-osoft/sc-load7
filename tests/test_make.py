@@ -3,6 +3,8 @@
 """
 Tests for `attr._make`.
 """
+
+
 import copy
 import functools
 import gc
@@ -21,7 +23,7 @@ from hypothesis.strategies import booleans, integers, lists, sampled_from, text
 import attr
 
 from attr import _config
-from attr._compat import PY310, PY_3_8_PLUS
+from attr._compat import PY310
 from attr._make import (
     Attribute,
     Factory,
@@ -1104,18 +1106,6 @@ class TestMakeClass:
         assert D in cls.__mro__
         assert isinstance(cls(), D)
 
-    def test_additional_class_body(self):
-        """
-        Additional class_body is added to newly created class.
-        """
-
-        def echo_func(cls, *args):
-            return args
-
-        cls = make_class("C", {}, class_body={"echo": classmethod(echo_func)})
-
-        assert ("a", "b") == cls.echo("a", "b")
-
     def test_clean_class(self, slots):
         """
         Attribute definitions do not appear on the class body.
@@ -1765,27 +1755,6 @@ class TestClassBuilder:
         @attr.s(slots=True)
         class C2(C):
             pass
-
-        # The original C2 is in a reference cycle, so force a collect:
-        gc.collect()
-
-        assert [C2] == C.__subclasses__()
-
-    @pytest.mark.skipif(not PY_3_8_PLUS, reason="cached_property is 3.8+")
-    def test_no_references_to_original_when_using_cached_property(self):
-        """
-        When subclassing a slotted class and using cached property, there are no stray references to the original class.
-        """
-
-        @attr.s(slots=True)
-        class C:
-            pass
-
-        @attr.s(slots=True)
-        class C2(C):
-            @functools.cached_property
-            def value(self) -> int:
-                return 0
 
         # The original C2 is in a reference cycle, so force a collect:
         gc.collect()

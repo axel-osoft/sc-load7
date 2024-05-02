@@ -65,7 +65,7 @@ def test_pyright_baseline():
         PyrightDiagnostic(
             severity="error",
             message='Cannot assign member "a" for type '
-            '"Frozen"\n\xa0\xa0"Frozen" is frozen\n\xa0\xa0\xa0\xa0Member "__set__" is unknown',
+            '"Frozen"\n\xa0\xa0"Frozen" is frozen',
         ),
         PyrightDiagnostic(
             severity="information",
@@ -74,8 +74,7 @@ def test_pyright_baseline():
         PyrightDiagnostic(
             severity="error",
             message='Cannot assign member "a" for type '
-            '"FrozenDefine"\n\xa0\xa0"FrozenDefine" is frozen\n\xa0\xa0\xa0\xa0'
-            'Member "__set__" is unknown',
+            '"FrozenDefine"\n\xa0\xa0"FrozenDefine" is frozen',
         ),
         PyrightDiagnostic(
             severity="information",

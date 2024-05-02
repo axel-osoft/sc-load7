@@ -43,26 +43,6 @@ False
 
 As shown, the generated `__init__` method allows for both positional and keyword arguments.
 
----
-
-Unlike Data Classes, *attrs* doesn't force you to use type annotations.
-So, the previous example could also have been written as:
-
-```{doctest}
->>> @define
-... class Coordinates:
-...     x = field()
-...     y = field()
->>> Coordinates(1, 2)
-Coordinates(x=1, y=2)
-```
-
-:::{caution}
-If a class body contains a field that is defined using {func}`attrs.field` (or {func}`attr.ib`), but **lacks a type annotation**, *attrs* switches to a no-typing mode and ignores fields that have type annotations but are not defined using {func}`attrs.field` (or {func}`attr.ib`).
-:::
-
----
-
 For private attributes, *attrs* will strip the leading underscores for keyword arguments:
 
 ```{doctest}
@@ -467,8 +447,7 @@ Traceback (most recent call last):
 TypeError: ("'x' must be <type 'int'> (got '42' that is a <type 'str'>).", Attribute(name='x', default=NOTHING, factory=NOTHING, validator=<instance_of validator for type <type 'int'>>, type=None, kw_only=False), <type 'int'>, '42')
 ```
 
-If using the old-school {func}`attr.s` decorator, validators only run on initialization by default.
-If using the newer {func}`attrs.define` and friends, validators run on initialization *and* on attribute setting.
+Please note that if you use {func}`attr.s` (and **not** {func}`attrs.define`) to define your class, validators only run on initialization by default -- not when you set an attribute.
 This behavior can be changed using the *on_setattr* argument.
 
 Check out {ref}`validators` for more details.
@@ -486,13 +465,10 @@ This can be useful for doing type-conversions on values that you don't want to f
 >>> o = C("1")
 >>> o.x
 1
->>> o.x = "2"
->>> o.x
-2
 ```
 
-If using the old-school {func}`attr.s` decorator, converters only run on initialization by default.
-If using the newer {func}`attrs.define` and friends, converters run on initialization *and* on attribute setting.
+Please note that converters only run on initialization when using the old-school {func}`attr.s` decorator.
+They do run by default with {func}`attrs.define` and friends.
 This behavior can be changed using the *on_setattr* argument.
 
 Check out {ref}`converters` for more details.

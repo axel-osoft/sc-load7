@@ -98,13 +98,7 @@ html_theme_options = {
     "light_logo": "attrs_logo.svg",
     "dark_logo": "attrs_logo_white.svg",
     "top_of_page_button": None,
-    "light_css_variables": {
-        "font-stack": "Inter,sans-serif",
-        "font-stack--monospace": "BerkeleyMono, MonoLisa, ui-monospace, "
-        "SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace",
-    },
 }
-html_css_files = ["custom.css"]
 
 
 # The name of an image file (within the static path) to use as favicon of the
@@ -162,12 +156,12 @@ texinfo_documents = [
         "attrs Documentation",
         "Hynek Schlawack",
         "attrs",
-        "Python Classes Without Boilerplate",
+        "Python Clases Without Boilerplate",
         "Miscellaneous",
     )
 ]
 
-epub_description = "Python Classes Without Boilerplate"
+epub_description = "Python Clases Without Boilerplate"
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 

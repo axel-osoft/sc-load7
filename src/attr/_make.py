@@ -3,9 +3,7 @@
 import contextlib
 import copy
 import enum
-import functools
 import inspect
-import itertools
 import linecache
 import sys
 import types
@@ -18,9 +16,9 @@ from operator import itemgetter
 from . import _compat, _config, setters
 from ._compat import (
     PY310,
-    PY_3_8_PLUS,
     _AnnotationExtractor,
     get_generic_base,
+    set_closure_cell,
 )
 from .exceptions import (
     DefaultAlreadySetError,
@@ -318,11 +316,11 @@ def _compile_and_eval(script, globs, locs=None, filename=""):
     eval(bytecode, globs, locs)
 
 
-def _make_method(name, script, filename, globs, locals=None):
+def _make_method(name, script, filename, globs):
     """
     Create the method with the script given and return the method object.
     """
-    locs = {} if locals is None else locals
+    locs = {}
 
     # In order of debuggers like PDB being able to step through the code,
     # we add a fake linecache entry.
@@ -600,64 +598,6 @@ def _transform_attrs(
     return _Attributes((AttrsClass(attrs), base_attrs, base_attr_map))
 
 
-def _make_cached_property_getattr(
-    cached_properties,
-    original_getattr,
-    cls,
-):
-    lines = [
-        # Wrapped to get `__class__` into closure cell for super()
-        # (It will be replaced with the newly constructed class after construction).
-        "def wrapper(_cls):",
-        "    __class__ = _cls",
-        "    def __getattr__(self, item, cached_properties=cached_properties, original_getattr=original_getattr, _cached_setattr_get=_cached_setattr_get):",
-        "         func = cached_properties.get(item)",
-        "         if func is not None:",
-        "              result = func(self)",
-        "              _setter = _cached_setattr_get(self)",
-        "              _setter(item, result)",
-        "              return result",
-    ]
-    if original_getattr is not None:
-        lines.append(
-            "         return original_getattr(self, item)",
-        )
-    else:
-        lines.extend(
-            [
-                "         if hasattr(super(), '__getattr__'):",
-                "              return super().__getattr__(item)",
-                "         original_error = f\"'{self.__class__.__name__}' object has no attribute '{item}'\"",
-                "         raise AttributeError(original_error)",
-            ]
-        )
-
-    lines.extend(
-        [
-            "    return __getattr__",
-            "__getattr__ = wrapper(_cls)",
-        ]
-    )
-
-    unique_filename = _generate_unique_filename(cls, "getattr")
-
-    glob = {
-        "cached_properties": cached_properties,
-        "_cached_setattr_get": _obj_setattr.__get__,
-        "original_getattr": original_getattr,
-    }
-
-    return _make_method(
-        "__getattr__",
-        "\n".join(lines),
-        unique_filename,
-        glob,
-        locals={
-            "_cls": cls,
-        },
-    )
-
-
 def _frozen_setattrs(self, name, value):
     """
     Attached to frozen classes as __setattr__.
@@ -918,50 +858,9 @@ class _ClassBuilder:
         ):
             names += ("__weakref__",)
 
-        if PY_3_8_PLUS:
-            cached_properties = {
-                name: cached_property.func
-                for name, cached_property in cd.items()
-                if isinstance(cached_property, functools.cached_property)
-            }
-        else:
-            # `functools.cached_property` was introduced in 3.8.
-            # So can't be used before this.
-            cached_properties = {}
-
-        # Collect methods with a `__class__` reference that are shadowed in the new class.
-        # To know to update them.
-        additional_closure_functions_to_update = []
-        if cached_properties:
-            # Add cached properties to names for slotting.
-            names += tuple(cached_properties.keys())
-
-            for name in cached_properties:
-                # Clear out function from class to avoid clashing.
-                del cd[name]
-
-            additional_closure_functions_to_update.extend(
-                cached_properties.values()
-            )
-
-            class_annotations = _get_annotations(self._cls)
-            for name, func in cached_properties.items():
-                annotation = inspect.signature(func).return_annotation
-                if annotation is not inspect.Parameter.empty:
-                    class_annotations[name] = annotation
-
-            original_getattr = cd.get("__getattr__")
-            if original_getattr is not None:
-                additional_closure_functions_to_update.append(original_getattr)
-
-            cd["__getattr__"] = _make_cached_property_getattr(
-                cached_properties, original_getattr, self._cls
-            )
-
         # We only add the names of attributes that aren't inherited.
         # Setting __slots__ to inherited attributes wastes memory.
         slot_names = [name for name in names if name not in base_names]
-
         # There are slots for attributes from current class
         # that are defined in parent classes.
         # As their descriptors may be overridden by a child class,
@@ -975,7 +874,6 @@ class _ClassBuilder:
         cd.update(reused_slots)
         if self._cache_hash:
             slot_names.append(_hash_cache_field)
-
         cd["__slots__"] = tuple(slot_names)
 
         cd["__qualname__"] = self._cls.__qualname__
@@ -989,9 +887,7 @@ class _ClassBuilder:
         # compiler will bake a reference to the class in the method itself
         # as `method.__closure__`.  Since we replace the class with a
         # clone, we rewrite these references so it keeps working.
-        for item in itertools.chain(
-            cls.__dict__.values(), additional_closure_functions_to_update
-        ):
+        for item in cls.__dict__.values():
             if isinstance(item, (classmethod, staticmethod)):
                 # Class- and staticmethods hide their functions inside.
                 # These might need to be rewritten as well.
@@ -1013,7 +909,8 @@ class _ClassBuilder:
                     pass
                 else:
                     if match:
-                        cell.cell_contents = cls
+                        set_closure_cell(cell, cls)
+
         return cls
 
     def add_repr(self, ns):
@@ -2387,9 +2284,9 @@ def _attrs_to_init_script(
                         attr_name, arg_name, has_on_setattr
                     )
                 )
-                names_for_globals[_init_converter_pat % (a.name,)] = (
-                    a.converter
-                )
+                names_for_globals[
+                    _init_converter_pat % (a.name,)
+                ] = a.converter
             else:
                 lines.append(fmt_setter(attr_name, arg_name, has_on_setattr))
 
@@ -2418,9 +2315,9 @@ def _attrs_to_init_script(
                         has_on_setattr,
                     )
                 )
-                names_for_globals[_init_converter_pat % (a.name,)] = (
-                    a.converter
-                )
+                names_for_globals[
+                    _init_converter_pat % (a.name,)
+                ] = a.converter
             else:
                 lines.append(
                     "    " + fmt_setter(attr_name, arg_name, has_on_setattr)
@@ -2447,9 +2344,9 @@ def _attrs_to_init_script(
                         attr_name, arg_name, has_on_setattr
                     )
                 )
-                names_for_globals[_init_converter_pat % (a.name,)] = (
-                    a.converter
-                )
+                names_for_globals[
+                    _init_converter_pat % (a.name,)
+                ] = a.converter
             else:
                 lines.append(fmt_setter(attr_name, arg_name, has_on_setattr))
 
@@ -2735,11 +2632,9 @@ class Attribute:
             else:
                 bound_setattr(
                     name,
-                    (
-                        types.MappingProxyType(dict(value))
-                        if value
-                        else _empty_metadata_singleton
-                    ),
+                    types.MappingProxyType(dict(value))
+                    if value
+                    else _empty_metadata_singleton,
                 )
 
 
@@ -2973,9 +2868,7 @@ _f = [
 Factory = _add_hash(_add_eq(_add_repr(Factory, attrs=_f), attrs=_f), attrs=_f)
 
 
-def make_class(
-    name, attrs, bases=(object,), class_body=None, **attributes_arguments
-):
+def make_class(name, attrs, bases=(object,), **attributes_arguments):
     r"""
     A quick way to create a new class called *name* with *attrs*.
 
@@ -2991,8 +2884,6 @@ def make_class(
 
     :param tuple bases: Classes that the new class will subclass.
 
-    :param dict class_body: An optional dictionary of class attributes for the new class.
-
     :param attributes_arguments: Passed unmodified to `attr.s`.
 
     :return: A new class with *attrs*.
@@ -3000,7 +2891,6 @@ def make_class(
 
     .. versionadded:: 17.1.0 *bases*
     .. versionchanged:: 18.1.0 If *attrs* is ordered, the order is retained.
-    .. versionchanged:: 23.2.0 *class_body*
     """
     if isinstance(attrs, dict):
         cls_dict = attrs
@@ -3015,8 +2905,6 @@ def make_class(
     user_init = cls_dict.pop("__init__", None)
 
     body = {}
-    if class_body is not None:
-        body.update(class_body)
     if pre_init is not None:
         body["__attrs_pre_init__"] = pre_init
     if post_init is not None:

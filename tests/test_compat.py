@@ -60,4 +60,5 @@ def test_attrsinstance_subclass_protocol():
     """
 
     class Foo(attr.AttrsInstance, attr._compat.Protocol):
-        def attribute(self) -> int: ...
+        def attribute(self) -> int:
+            ...

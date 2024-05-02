@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 
 [build-system]
-requires = ["hatchling", "hatch-vcs", "hatch-fancy-pypi-readme>=23.2.0"]
+requires = ["hatchling", "hatch-vcs", "hatch-fancy-pypi-readme"]
 build-backend = "hatchling.build"
 
 
@@ -30,19 +30,18 @@ dynamic = ["version", "readme"]
 
 [project.optional-dependencies]
 tests-mypy = [
-  'pytest-mypy-plugins; platform_python_implementation == "CPython" and python_version >= "3.8"',
+  'pytest-mypy-plugins; python_implementation == "CPython" and python_version >= "3.8"',
   # Since the mypy error messages keep changing, we have to keep updating this
   # pin.
-  'mypy>=1.6; platform_python_implementation == "CPython" and python_version >= "3.8"',
+  'mypy>=1.6; python_implementation == "CPython" and python_version >= "3.8"',
 ]
 tests-no-zope = [
   # For regression test to ensure cloudpickle compat doesn't break.
-  'cloudpickle; platform_python_implementation == "CPython"',
+  'cloudpickle; python_implementation == "CPython"',
   "hypothesis",
   "pympler",
   # 4.3.0 dropped last use of `convert`
-  # 8.0 broke something around warnings/exceptions
-  "pytest>=4.3.0,<8.0",
+  "pytest>=4.3.0",
   "pytest-xdist[psutil]",
   "attrs[tests-mypy]",
 ]
@@ -113,11 +112,6 @@ text = """
 [Full changelog](https://www.attrs.org/en/stable/changelog.html)
 """
 
-# Point sponsor image URLs to versions.
-[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
-pattern = '\/latest\/_static/sponsors'
-replacement = '/$HFPR_VERSION/_static/sponsors'
-
 
 [tool.pytest.ini_options]
 addopts = ["-ra", "--strict-markers", "--strict-config"]
@@ -165,7 +159,6 @@ toplevel = ["attr", "attrs"]
 [tool.ruff]
 src = ["src", "tests", "conftest.py", "docs"]
 
-[tool.lint.ruff]
 select = ["ALL"]
 ignore = [
   "A001",    # shadowing is fine
@@ -187,6 +180,7 @@ ignore = [
   "PLR0911", # we're complex software
   "PLR0912", # we're complex software
   "PLR0915", # we're complex software
+  "PGH001",  # eval FTW
   "S307",    # eval FTW
   "N807",    # we need to create functions that start with __
   "ERA001",  # we need to keep around some notes
@@ -198,7 +192,7 @@ ignore = [
   "TRY301",  # I'm sorry, but this makes not sense for us.
 ]
 
-[tool.ruff.lint.per-file-ignores]
+[tool.ruff.per-file-ignores]
 "**/test_*" = [
   "ARG005",  # we need stub lambdas
   "S",
@@ -234,7 +228,7 @@ ignore = [
   "UP037",  # we test some older syntaxes on purpose
 ]
 
-[tool.ruff.lint.isort]
+[tool.ruff.isort]
 lines-between-types = 1
 lines-after-imports = 2
 known-first-party = ["attr", "attrs"]
