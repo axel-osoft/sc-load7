@@ -44,15 +44,12 @@ Try to design your classes in a way that is clean and convenient to use -- not b
 The database format can change anytime and you're stuck with a bad class design that is hard to change.
 Embrace functions and classmethods as a filter between reality and what's best for you to work with.
 
-:::{important}
+:::{warning}
 While *attrs*'s initialization concepts (including the following sections about validators and converters) are powerful, they are **not** intended to replace a fully-featured serialization or validation system.
 
 We want to help you to write a `__init__` that you'd write by hand, but with less boilerplate.
 
 If you look for powerful-yet-unintrusive serialization and validation for your *attrs* classes, have a look at our sibling project [*cattrs*](https://catt.rs/) or our [third-party extensions](https://github.com/python-attrs/attrs/wiki/Extensions-to-attrs).
-
-This separation of creating classes and serializing them is a conscious design decision.
-We don't think that your business model and your serialization format should be coupled.
 :::
 
 (private-attributes)=
@@ -99,7 +96,6 @@ This can be used to override private attribute handling, or make other arbitrary
 <Signature (self, _x: int, distasteful_y: int) -> None>
 ```
 
-(defaults)=
 
 ## Defaults
 
@@ -125,7 +121,7 @@ C(a=42, b=[], c=[], d={})
 
 It's important that the decorated method -- or any other method or property! -- doesn't have the same name as the attribute, otherwise it would overwrite the attribute definition.
 
-Similar to the [common gotcha with mutable default arguments](https://docs.python-guide.org/writing/gotchas/#mutable-default-arguments), `default=[]` will *not* do what you may think it might do:
+Please note that as with function and method signatures, `default=[]` will *not* do what you may think it might do:
 
 ```{doctest}
 >>> @define
@@ -192,7 +188,7 @@ Again, it's important that the decorated method doesn't have the same name as th
 
 ### Callables
 
-If you want to reuse your validators, you should have a look at the `validator` argument to {func}`attrs.field`.
+If you want to re-use your validators, you should have a look at the `validator` argument to {func}`attrs.field`.
 
 It takes either a callable or a list of callables (usually functions) and treats them as validators that receive the same arguments as with the decorator approach.
 Also as with the decorator approach, they are passed as *positional arguments* so you can name them however you want.
@@ -262,7 +258,7 @@ C(x=128)
 >>> C("128")
 Traceback (most recent call last):
    ...
-TypeError: ("'x' must be <class 'int'> (got '128' that is a <class 'str'>).", Attribute(name='x', default=NOTHING, validator=[<instance_of validator for type <class 'int'>>, <function fits_byte at 0x10fd7a0d0>], repr=True, cmp=True, hash=True, init=True, metadata=mappingproxy({}), type=None, converter=None), <class 'int'>, '128')
+TypeError: ("'x' must be <class 'int'> (got '128' that is a <class 'str'>).", Attribute(name='x', default=NOTHING, validator=[<instance_of validator for type <class 'int'>>, <function fits_byte at 0x10fd7a0d0>], repr=True, cmp=True, hash=True, init=True, metadata=mappingproxy({}), type=None, converter=one), <class 'int'>, '128')
 >>> C(256)
 Traceback (most recent call last):
    ...
@@ -310,9 +306,6 @@ This can be useful for doing type-conversions on values that you don't want to f
 >>> o = C("1")
 >>> o.x
 1
->>> o.x = "2"
->>> o.x
-2
 ```
 
 Converters are run *before* validators, so you can use validators to check the final form of the value.
@@ -364,13 +357,12 @@ However, sometimes you need to do that one quick thing before or after your clas
 For that purpose, *attrs* offers the following options:
 
 - `__attrs_pre_init__` is automatically detected and run *before* *attrs* starts initializing.
-  If `__attrs_pre_init__` takes more than the `self` argument, the *attrs*-generated `__init__` will call it with the same arguments it received itself.
-  This is useful if you need to inject a call to `super().__init__()` -- with or without arguments.
+  This is useful if you need to inject a call to `super().__init__()`.
 
 - `__attrs_post_init__` is automatically detected and run *after* *attrs* is done initializing your instance.
   This is useful if you want to derive some attribute from others or perform some kind of validation over the whole instance.
 
-- `__attrs_init__` is written and attached to your class *instead* of `__init__`, if *attrs* is told to not write one (when `init=False` or a by a combination of `auto_detect=True` and a custom `__init__`).
+- `__attrs_init__` is written and attached to your class *instead* of `__init__`, if *attrs* is told to not write one (i.e. `init=False` or a combination of `auto_detect=True` and a custom `__init__`).
   This is useful if you want full control over the initialization process, but don't want to set the attributes by hand.
 
 
@@ -389,13 +381,6 @@ C(x=42)
 ```
 
 If you need more control, use the custom init approach described next.
-
-:::{warning}
-You never need to use `super()` with *attrs* classes that inherit from other *attrs* classes.
-Each *attrs* class implements an `__init__` based on its own fields and those of all its base classes.
-
-You only need this escape hatch when subclassing non-*attrs* classes.
-:::
 
 
 ### Custom Init

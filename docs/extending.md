@@ -94,15 +94,35 @@ You can only use this trick to tell *Mypy* that a class is actually an *attrs* c
 
 ### Pyright
 
-Generic decorator wrapping is supported in [*Pyright*](https://github.com/microsoft/pyright) via `typing.dataclass_transform` / {pep}`681`.
+Generic decorator wrapping is supported in [*Pyright*](https://github.com/microsoft/pyright) via their [`dataclass_transform`] specification.
 
 For a custom wrapping of the form:
 
 ```
-@typing.dataclass_transform(field_specifiers=(attr.attrib, attr.field))
 def custom_define(f):
     return attr.define(f)
 ```
+
+This is implemented via a `__dataclass_transform__` type decorator in the custom extension's `.pyi` of the form:
+
+```
+def __dataclass_transform__(
+    *,
+    eq_default: bool = True,
+    order_default: bool = False,
+    kw_only_default: bool = False,
+    field_descriptors: Tuple[Union[type, Callable[..., Any]], ...] = (()),
+) -> Callable[[_T], _T]: ...
+
+@__dataclass_transform__(field_descriptors=(attr.attrib, attr.field))
+def custom_define(f): ...
+```
+
+:::{warning}
+`dataclass_transform` is supported **provisionally** as of `pyright` 1.1.135.
+
+Both the *Pyright* [`dataclass_transform`] specification and *attrs* implementation may change in future versions.
+:::
 
 ## Types
 
@@ -214,7 +234,7 @@ For example, let's assume that you really don't like floats:
 Data(a=42, c='spam')
 ```
 
-A more realistic example would be to automatically convert data that you, for example, load from JSON:
+A more realistic example would be to automatically convert data that you, e.g., load from JSON:
 
 ```{doctest}
 >>> from datetime import datetime
@@ -312,3 +332,5 @@ It has the signature
 >>> json.dumps(data)
 '{"dt": "2020-05-04T13:37:00"}'
 ```
+
+[`dataclass_transform`]: https://github.com/microsoft/pyright/blob/main/specs/dataclass_transforms.md
