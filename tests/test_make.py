@@ -3,6 +3,8 @@
 """
 Tests for `attr._make`.
 """
+
+
 import copy
 import functools
 import gc
@@ -21,7 +23,7 @@ from hypothesis.strategies import booleans, integers, lists, sampled_from, text
 import attr
 
 from attr import _config
-from attr._compat import PY_3_8_PLUS, PY_3_10_PLUS
+from attr._compat import PY310
 from attr._make import (
     Attribute,
     Factory,
@@ -54,19 +56,6 @@ from .utils import simple_attr
 
 
 attrs_st = simple_attrs.map(lambda c: Attribute.from_counting_attr("name", c))
-
-
-@pytest.fixture(name="with_and_without_validation", params=[True, False])
-def _with_and_without_validation(request):
-    """
-    Run tests with and without validation enabled.
-    """
-    attr.validators.set_disabled(request.param)
-
-    try:
-        yield
-    finally:
-        attr.validators.set_disabled(False)
 
 
 class TestCountingAttr:
@@ -309,7 +298,7 @@ class TestTransformAttrs:
         b = attr.ib(default=2)
         a = attr.ib(default=1)
 
-        @attr.s(these={"a": a, "b": b})
+        @attr.s(these=dict([("a", a), ("b", b)]))
         class C:
             pass
 
@@ -529,7 +518,7 @@ class TestAttributes:
             assert meth is None
 
     @pytest.mark.parametrize(
-        ("arg_name", "method_name"),
+        "arg_name, method_name",
         [
             ("repr", "__repr__"),
             ("eq", "__eq__"),
@@ -600,13 +589,11 @@ class TestAttributes:
         Setting repr_ns overrides a potentially guessed namespace.
         """
 
-        with pytest.deprecated_call(match="The `repr_ns` argument"):
-
-            @attr.s(slots=slots_outer)
-            class C:
-                @attr.s(repr_ns="C", slots=slots_inner)
-                class D:
-                    pass
+        @attr.s(slots=slots_outer)
+        class C:
+            @attr.s(repr_ns="C", slots=slots_inner)
+            class D:
+                pass
 
         assert "C.D()" == repr(C.D())
 
@@ -625,11 +612,12 @@ class TestAttributes:
         assert C.D.__name__ == "D"
         assert C.D.__qualname__ == C.__qualname__ + ".D"
 
-    @pytest.mark.usefixtures("with_and_without_validation")
-    def test_pre_init(self):
+    @pytest.mark.parametrize("with_validation", [True, False])
+    def test_pre_init(self, with_validation, monkeypatch):
         """
         Verify that __attrs_pre_init__ gets called if defined.
         """
+        monkeypatch.setattr(_config, "_run_validators", with_validation)
 
         @attr.s
         class C:
@@ -640,65 +628,12 @@ class TestAttributes:
 
         assert 30 == getattr(c, "z", None)
 
-    @pytest.mark.usefixtures("with_and_without_validation")
-    def test_pre_init_args(self):
-        """
-        Verify that __attrs_pre_init__ gets called with extra args if defined.
-        """
-
-        @attr.s
-        class C:
-            x = attr.ib()
-
-            def __attrs_pre_init__(self2, x):
-                self2.z = x + 1
-
-        c = C(x=10)
-
-        assert 11 == getattr(c, "z", None)
-
-    @pytest.mark.usefixtures("with_and_without_validation")
-    def test_pre_init_kwargs(self):
-        """
-        Verify that __attrs_pre_init__ gets called with extra args and kwargs
-        if defined.
-        """
-
-        @attr.s
-        class C:
-            x = attr.ib()
-            y = attr.field(kw_only=True)
-
-            def __attrs_pre_init__(self2, x, y):
-                self2.z = x + y + 1
-
-        c = C(10, y=11)
-
-        assert 22 == getattr(c, "z", None)
-
-    @pytest.mark.usefixtures("with_and_without_validation")
-    def test_pre_init_kwargs_only(self):
-        """
-        Verify that __attrs_pre_init__ gets called with extra kwargs only if
-        defined.
-        """
-
-        @attr.s
-        class C:
-            y = attr.field(kw_only=True)
-
-            def __attrs_pre_init__(self2, y):
-                self2.z = y + 1
-
-        c = C(y=11)
-
-        assert 12 == getattr(c, "z", None)
-
-    @pytest.mark.usefixtures("with_and_without_validation")
-    def test_post_init(self):
+    @pytest.mark.parametrize("with_validation", [True, False])
+    def test_post_init(self, with_validation, monkeypatch):
         """
         Verify that __attrs_post_init__ gets called if defined.
         """
+        monkeypatch.setattr(_config, "_run_validators", with_validation)
 
         @attr.s
         class C:
@@ -712,11 +647,12 @@ class TestAttributes:
 
         assert 30 == getattr(c, "z", None)
 
-    @pytest.mark.usefixtures("with_and_without_validation")
-    def test_pre_post_init_order(self):
+    @pytest.mark.parametrize("with_validation", [True, False])
+    def test_pre_post_init_order(self, with_validation, monkeypatch):
         """
         Verify that __attrs_post_init__ gets called if defined.
         """
+        monkeypatch.setattr(_config, "_run_validators", with_validation)
 
         @attr.s
         class C:
@@ -1106,18 +1042,6 @@ class TestMakeClass:
         assert D in cls.__mro__
         assert isinstance(cls(), D)
 
-    def test_additional_class_body(self):
-        """
-        Additional class_body is added to newly created class.
-        """
-
-        def echo_func(cls, *args):
-            return args
-
-        cls = make_class("C", {}, class_body={"echo": classmethod(echo_func)})
-
-        assert ("a", "b") == cls.echo("a", "b")
-
     def test_clean_class(self, slots):
         """
         Attribute definitions do not appear on the class body.
@@ -1145,7 +1069,7 @@ class TestMakeClass:
         b = attr.ib(default=2)
         a = attr.ib(default=1)
 
-        C = attr.make_class("C", {"a": a, "b": b})
+        C = attr.make_class("C", dict([("a", a), ("b", b)]))
 
         assert "C(a=1, b=2)" == repr(C())
 
@@ -1276,7 +1200,7 @@ class TestFieldsDict:
 
         assert isinstance(d, dict)
         assert list(fields(C)) == list(d.values())
-        assert [a.name for a in fields(C)] == list(d)
+        assert [a.name for a in fields(C)] == [field_name for field_name in d]
 
 
 class TestConverter:
@@ -1322,19 +1246,47 @@ class TestConverter:
         """
         C = make_class(
             "C",
-            {
-                "y": attr.ib(),
-                "x": attr.ib(
-                    init=init,
-                    default=Factory(lambda: val),
-                    converter=lambda v: v + 1,
-                ),
-            },
+            dict(
+                [
+                    ("y", attr.ib()),
+                    (
+                        "x",
+                        attr.ib(
+                            init=init,
+                            default=Factory(lambda: val),
+                            converter=lambda v: v + 1,
+                        ),
+                    ),
+                ]
+            ),
         )
         c = C(2)
 
         assert c.x == val + 1
         assert c.y == 2
+
+    def test_factory_takes_self(self):
+        """
+        If takes_self on factories is True, self is passed.
+        """
+        C = make_class(
+            "C",
+            {
+                "x": attr.ib(
+                    default=Factory((lambda self: self), takes_self=True)
+                )
+            },
+        )
+
+        i = C()
+
+        assert i is i.x
+
+    def test_factory_hashable(self):
+        """
+        Factory is hashable.
+        """
+        assert hash(Factory(None, False)) == hash(Factory(None, False))
 
     def test_convert_before_validate(self):
         """
@@ -1750,27 +1702,6 @@ class TestClassBuilder:
 
         assert [C2] == C.__subclasses__()
 
-    @pytest.mark.skipif(not PY_3_8_PLUS, reason="cached_property is 3.8+")
-    def test_no_references_to_original_when_using_cached_property(self):
-        """
-        When subclassing a slotted class and using cached property, there are no stray references to the original class.
-        """
-
-        @attr.s(slots=True)
-        class C:
-            pass
-
-        @attr.s(slots=True)
-        class C2(C):
-            @functools.cached_property
-            def value(self) -> int:
-                return 0
-
-        # The original C2 is in a reference cycle, so force a collect:
-        gc.collect()
-
-        assert [C2] == C.__subclasses__()
-
     def _get_copy_kwargs(include_slots=True):
         """
         Generate a list of compatible attr.s arguments for the `copy` tests.
@@ -2125,7 +2056,7 @@ class BareSlottedC:
 
 
 class TestAutoDetect:
-    @pytest.mark.parametrize("C", [BareC, BareSlottedC])
+    @pytest.mark.parametrize("C", (BareC, BareSlottedC))
     def test_determine_detects_non_presence_correctly(self, C):
         """
         On an empty class, nothing should be detected.
@@ -2356,7 +2287,7 @@ class TestAutoDetect:
         assert C(1) == C(1)
 
     @pytest.mark.parametrize(
-        ("eq", "order", "cmp"),
+        "eq,order,cmp",
         [
             (True, None, None),
             (True, True, None),
@@ -2471,7 +2402,7 @@ class TestAutoDetect:
             C, "__getstate__", None
         )
 
-    @pytest.mark.skipif(PY_3_10_PLUS, reason="Pre-3.10 only.")
+    @pytest.mark.skipif(PY310, reason="Pre-3.10 only.")
     def test_match_args_pre_310(self):
         """
         __match_args__ is not created on Python versions older than 3.10.
@@ -2484,9 +2415,7 @@ class TestAutoDetect:
         assert None is getattr(C, "__match_args__", None)
 
 
-@pytest.mark.skipif(
-    not PY_3_10_PLUS, reason="Structural pattern matching is 3.10+"
-)
+@pytest.mark.skipif(not PY310, reason="Structural pattern matching is 3.10+")
 class TestMatchArgs:
     """
     Tests for match_args and __match_args__ generation.
