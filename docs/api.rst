@@ -11,7 +11,7 @@ If you're confused by the many names, please check out `names` for clarification
 
 - The classic ``attr`` that powers the venerable `attr.s` and `attr.ib`.
 - The newer ``attrs`` that only contains most modern APIs and relies on `attrs.define` and `attrs.field` to define your classes.
-  Additionally it offers some ``attr`` APIs with nicer defaults (for example, `attrs.asdict`).
+  Additionally it offers some ``attr`` APIs with nicer defaults (e.g. `attrs.asdict`).
 
 The ``attrs`` namespace is built *on top of* ``attr`` -- which will *never* go away -- and is just as stable, since it doesn't constitute a rewrite.
 To keep repetition low and this document at a reasonable size, the ``attr`` namespace is `documented on a separate page <api-attr>`, though.
@@ -442,14 +442,16 @@ All objects from ``attrs.validators`` are also available from ``attr.validators`
       ...     val = field(validator=attrs.validators.in_([1, 2, 3]))
       >>> C(State.ON, 1)
       C(state=<State.ON: 'on'>, val=1)
-      >>> C("On", 1)
+      >>> C("on", 1)
       Traceback (most recent call last):
          ...
-      ValueError: 'state' must be in <enum 'State'> (got 'On'), Attribute(name='state', default=NOTHING, validator=<in_ validator with options <enum 'State'>>, repr=True, eq=True, eq_key=None, order=True, order_key=None, hash=None, init=True, metadata=mappingproxy({}), type=None, converter=None, kw_only=False, inherited=False, on_setattr=None), <enum 'State'>, 'on')
+      ValueError: 'state' must be in <enum 'State'> (got 'on'), Attribute(name='state', default=NOTHING, validator=<in_ validator with options <enum 'State'>>, repr=True, eq=True, eq_key=None, order=True, order_key=None, hash=None, init=True, metadata=mappingproxy({}), type=None, converter=None, kw_only=False, inherited=False, on_setattr=None), <enum 'State'>, 'on')
       >>> C(State.ON, 4)
       Traceback (most recent call last):
       ...
       ValueError: 'val' must be in [1, 2, 3] (got 4), Attribute(name='val', default=NOTHING, validator=<in_ validator with options [1, 2, 3]>, repr=True, eq=True, eq_key=None, order=True, order_key=None, hash=None, init=True, metadata=mappingproxy({}), type=None, converter=None, kw_only=False, inherited=False, on_setattr=None), [1, 2, 3], 4)
+
+.. autofunction:: attrs.validators.provides
 
 .. autofunction:: attrs.validators.and_
 
@@ -534,7 +536,7 @@ All objects from ``attrs.validators`` are also available from ``attr.validators`
         >>> @define
         ... class User:
         ...     email = field(validator=attrs.validators.matches_re(
-        ...         r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"))
+        ...         "(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"))
         >>> User(email="user@example.com")
         User(email='user@example.com')
         >>> User(email="user@example.com@test.com")
@@ -650,7 +652,7 @@ All objects from ``attrs.converters`` are also available from ``attr.converters`
       C(x='')
 
 
-.. autofunction:: attrs.converters.to_bool(val)
+.. autofunction:: attrs.converters.to_bool
 
    For example:
 
@@ -665,11 +667,10 @@ All objects from ``attrs.converters`` are also available from ``attr.converters`
       C(x=True)
       >>> C(0)
       C(x=False)
-      >>> C("norway")
+      >>> C("foo")
       Traceback (most recent call last):
          File "<stdin>", line 1, in <module>
-      ValueError: Cannot convert value to bool: norway
-
+      ValueError: Cannot convert value to bool: foo
 
 
 
@@ -680,7 +681,7 @@ Setters
 
 .. module:: attrs.setters
 
-These are helpers that you can use together with `attrs.define`'s and `attrs.field`'s ``on_setattr`` arguments.
+These are helpers that you can use together with `attrs.define`'s and `attrs.fields`'s ``on_setattr`` arguments.
 All setters in ``attrs.setters`` are also available from ``attr.setters`` (it's the same module in a different namespace).
 
 .. autofunction:: frozen
@@ -713,5 +714,4 @@ All setters in ``attrs.setters`` are also available from ``attr.setters`` (it's 
          ...
      attrs.exceptions.FrozenAttributeError: ()
 
-   .. tip::
-      Use `attrs.define`'s *frozen* argument (or `attrs.frozen`) to freeze whole classes; it is more efficient.
+   N.B. Please use `attrs.define`'s *frozen* argument (or `attrs.frozen`) to freeze whole classes; it is more efficient.

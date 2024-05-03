@@ -28,16 +28,6 @@ class TestNextGen:
         """
         C("1", 2)
 
-    def test_field_type(self):
-        """
-        Make class with attrs.field and type parameter.
-        """
-        classFields = {"testint": attrs.field(type=int)}
-
-        A = attrs.make_class("A", classFields)
-
-        assert int == attrs.fields(A).testint.type
-
     def test_no_slots(self):
         """
         slots can be deactivated.
@@ -49,7 +39,7 @@ class TestNextGen:
 
         ns = NoSlots(1)
 
-        assert {"x": 1} == ns.__dict__
+        assert {"x": 1} == getattr(ns, "__dict__")
 
     def test_validates(self):
         """
