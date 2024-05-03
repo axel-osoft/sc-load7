@@ -12,9 +12,9 @@ from . import setters
 from ._funcs import asdict as _asdict
 from ._funcs import astuple as _astuple
 from ._make import (
-    _DEFAULT_ON_SETATTR,
     NOTHING,
     _frozen_setattrs,
+    _ng_default_on_setattr,
     attrib,
     attrs,
 )
@@ -52,14 +52,14 @@ def define(
 
     - Automatically detect whether or not *auto_attribs* should be `True` (c.f.
       *auto_attribs* parameter).
-    - Converters and validators run when attributes are set by default -- if
-      *frozen* is `False`.
+    - If *frozen* is `False`, run converters and validators when setting an
+      attribute by default.
     - *slots=True*
 
       .. caution::
 
          Usually this has only upsides and few visible effects in everyday
-         programming. But it *can* lead to some surprising behaviors, so please
+         programming. But it *can* lead to some suprising behaviors, so please
          make sure to read :term:`slotted classes`.
     - *auto_exc=True*
     - *auto_detect=True*
@@ -70,7 +70,7 @@ def define(
     Please note that these are all defaults and you can change them as you
     wish.
 
-    :param bool | None auto_attribs: If set to `True` or `False`, it behaves
+    :param Optional[bool] auto_attribs: If set to `True` or `False`, it behaves
        exactly like `attr.s`. If left `None`, `attr.s` will try to guess:
 
        1. If any attributes are annotated and no unannotated `attrs.fields`\ s
@@ -124,15 +124,17 @@ def define(
 
         # By default, mutable classes convert & validate on setattr.
         if frozen is False and on_setattr is None:
-            on_setattr = _DEFAULT_ON_SETATTR
+            on_setattr = _ng_default_on_setattr
 
         # However, if we subclass a frozen class, we inherit the immutability
         # and disable on_setattr.
         for base_cls in cls.__bases__:
             if base_cls.__setattr__ is _frozen_setattrs:
                 if had_on_setattr:
-                    msg = "Frozen classes can't use on_setattr (frozen-ness was inherited)."
-                    raise ValueError(msg)
+                    raise ValueError(
+                        "Frozen classes can't use on_setattr "
+                        "(frozen-ness was inherited)."
+                    )
 
                 on_setattr = setters.NO_OP
                 break
@@ -146,11 +148,11 @@ def define(
             return do_it(cls, False)
 
     # maybe_cls's type depends on the usage of the decorator.  It's a class
-    # if it's used as `@attrs` but `None` if used as `@attrs()`.
+    # if it's used as `@attrs` but ``None`` if used as `@attrs()`.
     if maybe_cls is None:
         return wrap
-
-    return wrap(maybe_cls)
+    else:
+        return wrap(maybe_cls)
 
 
 mutable = define
@@ -165,7 +167,6 @@ def field(
     hash=None,
     init=True,
     metadata=None,
-    type=None,
     converter=None,
     factory=None,
     kw_only=False,
@@ -178,9 +179,6 @@ def field(
     Identical to `attr.ib`, except keyword-only and with some arguments
     removed.
 
-    .. versionadded:: 23.1.0
-       The *type* parameter has been re-added; mostly for `attrs.make_class`.
-       Please note that type checkers ignore this metadata.
     .. versionadded:: 20.1.0
     """
     return attrib(
@@ -190,7 +188,6 @@ def field(
         hash=hash,
         init=init,
         metadata=metadata,
-        type=type,
         converter=converter,
         factory=factory,
         kw_only=kw_only,

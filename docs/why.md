@@ -39,19 +39,16 @@ One way to think about *attrs* vs Data Classes is that *attrs* is a fully-fledge
 Basically what *attrs* was in 2015.
 
 
-## … Pydantic?
+## … pydantic?
 
-Pydantic is first and foremost a *data validation & type coercion library*.
+*pydantic* is first and foremost a *data validation library*.
 As such, it is a capable complement to class building libraries like *attrs* (or Data Classes!) for parsing and validating untrusted data.
 
 However, as convenient as it might be, using it for your business or data layer [is problematic in several ways](https://threeofwands.com/why-i-use-attrs-instead-of-pydantic/):
 Is it really necessary to re-validate all your objects while reading them from a trusted database?
-In the parlance of [*Form, Command, and Model Validation*](https://verraes.net/2015/02/form-command-model-validation/), Pydantic is the right tool for *Commands*.
+In the parlance of [*Form, Command, and Model Validation*](https://verraes.net/2015/02/form-command-model-validation/), *pydantic* is the right tool for *Commands*.
 
 [*Separation of concerns*](https://en.wikipedia.org/wiki/Separation_of_concerns) feels tedious at times, but it's one of those things that you get to appreciate once you've shot your own foot often enough.
-
-*attrs* emphatically does **not** try to be a validation library, but a toolkit to write well-behaved classes like you would write yourself.
-If you'd like a powerful library for structuring, unstructuring, and validating data, have a look at [*cattrs*](https://catt.rs/) which is an official member of the *attrs* family.
 
 
 ## … namedtuples?
@@ -109,7 +106,7 @@ Other often surprising behaviors include:
   you end up with a class that has *two* `Point`s in its {attr}`__mro__ <class.__mro__>`: `[<class 'point.Point'>, <class 'point.Point'>, <type 'tuple'>, <type 'object'>]`.
 
   That's not only confusing, it also has very practical consequences:
-  for example if you create documentation that includes class hierarchies like [*Sphinx*'s autodoc](https://www.sphinx-doc.org/en/stable/usage/extensions/autodoc.html) with `show-inheritance`.
+  for example if you create documentation that includes class hierarchies like *[*Sphinx*'s autodoc](https://www.sphinx-doc.org/en/stable/usage/extensions/autodoc.html) with `show-inheritance`.
   Again: common problem, hacky solution with confusing fallout.
 
 All these things make `namedtuple`s a particularly poor choice for public APIs because all your objects are irrevocably tainted.
