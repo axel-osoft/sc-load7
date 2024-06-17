@@ -619,12 +619,8 @@ def _make_cached_property_getattr(cached_properties, original_getattr, cls):
     else:
         lines.extend(
             [
-                "         try:",
-                "             return super().__getattribute__(item)",
-                "         except AttributeError:",
-                "             if not hasattr(super(), '__getattr__'):",
-                "                 raise",
-                "             return super().__getattr__(item)",
+                "         if hasattr(super(), '__getattr__'):",
+                "              return super().__getattr__(item)",
                 "         original_error = f\"'{self.__class__.__name__}' object has no attribute '{item}'\"",
                 "         raise AttributeError(original_error)",
             ]
@@ -2309,7 +2305,9 @@ def _attrs_to_init_script(
     If *frozen* is True, we cannot set the attributes directly so we use
     a cached ``object.__setattr__``.
     """
-    lines = ["self.__attrs_pre_init__()"] if pre_init else []
+    lines = []
+    if pre_init:
+        lines.append("self.__attrs_pre_init__()")
 
     if needs_cached_setattr:
         lines.append(
